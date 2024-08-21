@@ -34,6 +34,7 @@
                   <option value="">Todas as Categorias</option>
                   <option value="manual">Manuais</option>
                   <option value="tutorial">Tutoriais</option>
+                  <option value="backup">Backup</option>
               </select>
           </div>
 
@@ -102,6 +103,7 @@
                               <select class="form-control" id="category" name="category" required>
                                   <option value="manual">Manual</option>
                                   <option value="tutorial">Tutorial</option>
+                                  <option value="backup">Backup</option>
                               </select>
                           </div>
                           <div class="form-group">
@@ -124,7 +126,7 @@
           document.getElementById('file').addEventListener('change', function () {
               var fileInput = this;
               var filePath = fileInput.value;
-              var allowedExtensions = /(\.pdf|\.doc|\.docx|\.mp4|\.xls|\.xlsx|\.ppt|\.pptx|\.txt)$/i;
+            var allowedExtensions = /(\.pdf|\.doc|\.docx|\.mp4|\.xls|\.xlsx|\.ppt|\.pptx|\.txt|\.bin|\.xml)$/i;
 
               if (!allowedExtensions.exec(filePath)) {
                   alert('Por favor, escolha um arquivo com uma extensão válida.');
@@ -301,30 +303,34 @@
           });
       </script>
 
-      @functions {
-          public string GetFileIconClass(string fileType)
-          {
-              switch (fileType.ToLower())
-              {
-                  case "pdf":
-                      return "fa-file-pdf";
-                  case "doc":
-                  case "docx":
-                      return "fa-file-word";
-                  case "mp4":
-                      return "fa-file-video";
-                  case "xls":
-                  case "xlsx":
-                      return "fa-file-excel";
-                  case "ppt":
-                  case "pptx":
-                      return "fa-file-powerpoint";
-                  case "txt":
-                      return "fa-file-alt";
-                  default:
-                      return "fa-file";
-              }
-          }
-      }
+    @functions {
+        public string GetFileIconClass(string fileType)
+        {
+            switch (fileType.ToLower())
+            {
+                case "pdf":
+                    return "fa-file-pdf";
+                case "doc":
+                case "docx":
+                    return "fa-file-word";
+                case "mp4":
+                    return "fa-file-video";
+                case "xls":
+                case "xlsx":
+                    return "fa-file-excel";
+                case "ppt":
+                case "pptx":
+                    return "fa-file-powerpoint";
+                case "txt":
+                    return "fa-file-alt";
+                case "bin":
+                    return "fa-file-code"; // Ícone para arquivo BIN
+                case "xml":
+                    return "fa-file-code"; // Ícone para arquivo XML
+                default:
+                    return "fa-file";
+            }
+        }
+    }
   </body>
   </html>
