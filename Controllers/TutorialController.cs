@@ -52,7 +52,7 @@ namespace AspnetCoreMvcFull.Controllers
               partialModel.funcionario = funcionario;
 
               partialModel.Documents = GetDocumentsFromDirectory();
-              return View("Tutorial",partialModel);
+              return View("Tutorial", partialModel);
             }
             else
             {
@@ -81,7 +81,7 @@ namespace AspnetCoreMvcFull.Controllers
 
       if (!Directory.Exists(directoryPath))
       {
-        return new List<DocumentViewModel>(); 
+        return new List<DocumentViewModel>();
       }
 
       var files = Directory.GetFiles(directoryPath)
@@ -92,12 +92,12 @@ namespace AspnetCoreMvcFull.Controllers
 
       foreach (var file in files)
       {
-        var fileName = Path.GetFileNameWithoutExtension(file); 
-        var fileExtension = Path.GetExtension(file).TrimStart('.'); 
+        var fileName = Path.GetFileNameWithoutExtension(file);
+        var fileExtension = Path.GetExtension(file).TrimStart('.');
 
         var parts = fileName.Split('_');
 
-        if (parts.Length >= 3) 
+        if (parts.Length >= 3)
         {
           var title = parts[0];
           var category = parts[1];
@@ -108,7 +108,7 @@ namespace AspnetCoreMvcFull.Controllers
             Category = category,
             FilePath = $"/{_validateSession.GetPermissao().GetHashCode()}/{Path.GetFileName(file)}",
             FileType = fileExtension,
-            ImagePath = "/images/default.png" 
+            ImagePath = "/images/default.png"
           });
         }
       }
@@ -144,13 +144,11 @@ namespace AspnetCoreMvcFull.Controllers
       {
 
         var fileExtension = Path.GetExtension(file.FileName).TrimStart('.');
+        var fileName = $"{title}_{category}_{Guid.NewGuid()}.{fileExtension}";
+
         if (category == "backup")
         {
-          var fileName = $"{title}_{category}.{fileExtension}";
-        }
-        else
-        {
-          var fileName = $"{title}_{category}_{Guid.NewGuid()}.{fileExtension}";
+          fileName = $"{title}_{category}.{fileExtension}";
         }
 
         var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot/{_validateSession.GetPermissao().GetHashCode()}");
