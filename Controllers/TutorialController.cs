@@ -144,8 +144,14 @@ namespace AspnetCoreMvcFull.Controllers
       {
 
         var fileExtension = Path.GetExtension(file.FileName).TrimStart('.');
-
-        var fileName = $"{title}_{category}_{Guid.NewGuid()}.{fileExtension}";
+        if (category == "backup")
+        {
+          var fileName = $"{title}_{category}.{fileExtension}";
+        }
+        else
+        {
+          var fileName = $"{title}_{category}_{Guid.NewGuid()}.{fileExtension}";
+        }
 
         var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot/{_validateSession.GetPermissao().GetHashCode()}");
 
