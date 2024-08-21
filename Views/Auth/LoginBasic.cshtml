@@ -1,0 +1,82 @@
+@{
+    Layout = "_BlankLayout";
+    ViewData["Title"] = "Login";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-auth2.css">
+}
+
+@* ************** Content ************** *@
+
+<div class="position-relative">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner py-4">
+
+            <!-- Login -->
+            <div class="card p-2">
+                <!-- Logo -->
+                <div class="app-brand justify-content-center mt-5">
+                    <a href="/" class="app-brand-link gap-2">
+                        <span class="app-brand-logo demo">@await Html.PartialAsync("../_Partials/_Macros")</span>
+                        <span class="app-brand-text demo text-heading fw-semibold">Connect</span>
+                    </a>
+                </div>
+                <!-- /Logo -->
+
+                <div class="card-body mt-2">
+                    <p class="mb-4">Conectados e prontos para ir mais longe.</p>
+
+                    <form id="formAuthentication" class="mb-3" asp-action="ValidateLogin" asp-controller="Auth" method="POST">
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="username" name="Username" placeholder="Insira o seu nome de usuário" required autofocus>
+                            <label for="username">Nome de Usuário</label>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="password" id="password" class="form-control" name="PasswordHash" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" required />
+                                        <label for="password">Senha</label>
+                                    </div>
+                                    <span class="input-group-text cursor-pointer"><i class="mdi mdi-eye-off-outline"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 d-flex justify-content-between">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="remember-me" name="RememberMe">
+                                <label class="form-check-label" for="remember-me">
+                                    Lembrar Email
+                                </label>
+                            </div>
+                            <a href="/Auth/ForgotPasswordBasic" class="float-end mb-1">
+                                <span>Esqueceu sua senha?</span>
+                            </a>
+                        </div>
+                        <div class="mb-3">
+                            <button class="btn btn-primary d-grid w-100" type="submit">Entrar</button>
+                        </div>
+                    </form>
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div id="errorMessage" class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-top: 20px; border: 1px solid #ffc107; border-radius: 10px; background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%); color: #856404; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 15px; position: relative;">
+                            <strong>@ViewBag.ErrorMessage</strong>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #856404; font-size: 1.5rem; font-weight: bold; cursor: pointer;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <script>
+                            setTimeout(function () {
+                                $('#errorMessage').alert('close');
+                            }, 5000); // 5000 milliseconds = 5 seconds
+                        </script>
+                    }
+                </div>
+            </div>
+            <!-- /Login -->         
+            <img src="~/img/illustrations/auth-basic-mask-light.png" class="authentication-image d-none d-lg-block" alt="triangle-bg" data-app-light-img="illustrations/auth-basic-mask-light.png" data-app-dark-img="illustrations/auth-basic-mask-dark.png">
+        </div>
+    </div>
+</div>

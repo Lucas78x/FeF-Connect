@@ -1,0 +1,143 @@
+@{
+    Layout = "_BlankLayout";
+    ViewData["Title"] = "Cadastro";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-auth2.css">
+}
+
+<div class="position-relative">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner py-4">
+            <!-- Register Card -->
+            <div class="card p-2">
+                <!-- Logo -->
+                <div class="app-brand justify-content-center mt-5">
+                    <a href="/" class="app-brand-link gap-2">
+                        <span class="app-brand-logo demo">@await Html.PartialAsync("../_Partials/_Macros")</span>
+                        <span class="app-brand-text demo text-heading fw-semibold">@TempData.Peek("appName")</span>
+                    </a>
+                </div>
+                <!-- /Logo -->
+                <div class="card-body mt-2">
+
+                    <form id="formAuthentication" class="mb-3" action="/Auth/Register" method="post">
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="username" name="Username" placeholder="Insira seu usuario" autofocus required>
+                            <label for="username">Nome de Usuario</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="nome" name="Nome" placeholder="Insira seu nome" required>
+                            <label for="nome">Nome</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="sobrenome" name="Sobrenome" placeholder="Insira seu sobrenome" required>
+                            <label for="sobrenome">Sobrenome</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="cpf" name="CPF" placeholder="Insira seu CPF" required>
+                            <label for="cpf">CPF</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="rg" name="RG" placeholder="Insira seu RG" required>
+                            <label for="rg">RG</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="text" class="form-control" id="cargo" name="Cargo" placeholder="Insira seu cargo" required>
+                            <label for="cargo">Cargo</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="email" class="form-control" id="email" name="Email" placeholder="Insira seu email" required>
+                            <label for="email">Email</label>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="date" class="form-control" id="dataNascimento" name="DataNascimento" placeholder="Insira sua data de nascimento" required>
+                            <label for="dataNascimento">Data de Nascimento</label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="genero">Genero</label>
+                            <select class="form-select" id="genero" name="Genero" required>
+                                <option value="1">Masculino</option>
+                                <option value="2">Feminino</option>
+                                <option value="3">Prefiro não dizer</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="permissao">Selecione o Grupo</label>
+                            <select class="form-select" id="permissao" name="Permissao" required>
+                                <option value="1">Administrador</option>
+                                <option value="2">Gerente Administrativo</option>
+                                <option value="3">Gerente Operacional</option>
+                                <option value="4">Gerente Comercial</option>
+                                <option value="5">Supervisor</option>
+                                <option value="7">Analista</option>
+                                <option value="8">Suporte Tecnico</option>
+                                <option value="9">Financeiro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-floating form-floating-outline mb-3">
+                            <input type="password" id="password" class="form-control" name="PasswordHash" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" required />
+                            <label for="password">Senha</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary d-grid w-100">
+                            Criar
+                        </button>
+                    </form>
+
+                    <p class="text-center">
+                        <span>Já tem uma conta?</span>
+                        <a href="/Auth/LoginBasic">
+                            <span>Entrar</span>
+                        </a>
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                    {
+                        <div id="errorMessage" class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-top: 20px; border: 1px solid #ffc107; border-radius: 10px; background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%); color: #856404; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 15px; position: relative;">
+                            <strong>@ViewBag.ErrorMessage</strong>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #856404; font-size: 1.5rem; font-weight: bold; cursor: pointer;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <script>
+                            setTimeout(function () {
+                                $('#errorMessage').alert('close');
+                            }, 5000); // 5000 milliseconds = 5 seconds
+                        </script>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.SuccessMessage))
+                    {
+                        <div id="successMessage" class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top: 20px; border: 1px solid #28a745; border-radius: 10px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); color: #155724; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 15px; position: relative;">
+                            <strong>@ViewBag.SuccessMessage</strong>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #155724; font-size: 1.5rem; font-weight: bold; cursor: pointer;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <script>
+                            setTimeout(function () {
+                                $('#successMessage').alert('close');
+                            }, 5000); // 5000 milliseconds = 5 seconds
+                        </script>
+                    }
+                </div>
+            </div>
+            <!-- Register Card -->
+            <img src="~/img/illustrations/auth-basic-mask-light.png" class="authentication-image d-none d-lg-block" alt="triangle-bg" data-app-light-img="illustrations/auth-basic-mask-light.png" data-app-dark-img="illustrations/auth-basic-mask-dark.png">
+        </div>
+    </div>
+</div>

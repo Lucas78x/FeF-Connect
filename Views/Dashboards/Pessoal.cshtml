@@ -1,0 +1,140 @@
+@using AspnetCoreMvcFull.Models;
+@model PartialModel;
+
+@{
+    ViewData["Title"] = "Meu Perfil";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />   
+    <link rel="stylesheet" href="~/vendor/css/perfil.css">
+}
+
+
+<div class="container mt-5">
+    <div class="profile-header">
+        <input type="file" id="photoUpload" style="display: none;" />
+        <img src="@Url.Content(Model.front.IconUrl)" alt="Foto de Perfil" class="profile-img">
+        <button class="change-photo-btn" id="changePhotoButton">Alterar Foto</button>
+        <h2>@ViewData["Title"]</h2>
+        <p>@Model.funcionario.Cargo</p>
+    </div>
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <div class="profile-section-title">Informações Pessoais</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-user"></i>Nome:</label>
+                        <p class="profile-info-value">  @Model.funcionario.Nome</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-user-tag"></i>Sobrenome:</label>
+                        <p class="profile-info-value">  @Model.funcionario.Sobrenome</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-id-card"></i>CPF:</label>
+                        <p class="profile-info-value">  @Model.funcionario.CPF</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-id-card-alt"></i>RG:</label>
+                        <p class="profile-info-value">  @Model.funcionario.RG</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-venus-mars"></i>Gênero:</label>
+                        <p class="profile-info-value">  @Model.funcionario.Genero.ToString()</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-envelope"></i>Email:</label>
+                        <p class="profile-info-value">  @Model.funcionario.Email</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-calendar-alt"></i>Data de Nascimento:</label>
+                        <p class="profile-info-value">  @Model.funcionario.DataNascimento.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section-title">Informações Profissionais</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-briefcase"></i>Cargo:</label>
+                        <p class="profile-info-value">  @Model.funcionario.Cargo</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-building"></i>Departamento:</label>
+                        <p class="profile-info-value">  @Model.funcionario.Permissao.ToString().Replace("_"," ")</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="profile-info-label"><i class="icon fas fa-calendar-check"></i>Data de Admissão:</label>
+                        <p class="profile-info-value">  @DateTime.Now.ToString("dd/MM/yyyy")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section VendorScripts {
+    <script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+}
+
+@section PageScripts {
+    <script src="~/js/dashboards-analytics.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.getElementById('changePhotoButton').addEventListener('click', function () {
+            document.getElementById('photoUpload').click();
+        });
+
+        document.getElementById('photoUpload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                fetch('/Dashboards/ChangePhoto', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Handle the response from the server
+                        if (data.success) {
+                            window.location.reload();
+                        } else
+                        {
+
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        window.location.reload();
+                    });
+            }
+        });
+    </script>
+}

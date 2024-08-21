@@ -1,0 +1,347 @@
+@using AspnetCoreMvcFull.Models
+@model PartialModel;
+
+@{
+    ViewData["Title"] = "Requisições";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="~/vendor/css/requisicoes.css">
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">Requisições</h1>
+    <form id="filterForm" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="RequisitanteFiltro" class="form-label">Requisitante</label>
+                    <input type="text" class="form-control" id="RequisitanteFiltro" name="Requisitante">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="StatusFiltro" class="form-label">Status</label>
+                    <select class="form-select" id="StatusFiltro" name="Status">
+                        <option value="">Todos</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Andamento">Andamento</option>
+                        <option value="Aguardando">Aguardando</option>
+                        <option value="Cancelado">Cancelado</option>
+                        <option value="Concluido">Concluido</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-filtre">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Requisicoes != null && Model.Requisicoes.Any())
+    {
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Requisitante</th>
+                        <th>Relatório</th>
+                        <th>Solução</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var requisicao in Model.Requisicoes)
+                    {
+                        <tr>
+                            <td class="text-truncateName">@requisicao.RequisitanteNome</td>
+                            <td class="text-truncate">@requisicao.Descricao</td>
+                            <td class="text-truncate">@requisicao.DescricaoSolucao</td>
+                            <td>
+                                <span class="status-badge @(GetStatusBadgeClass(requisicao.Status.ToString()))">
+                                    @requisicao.Status.ToString()
+                                </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editModal"
+                                        data-id="@requisicao.Id"
+                                        data-descricao="@requisicao.Descricao"
+                                        data-status="@requisicao.Status"
+                                        data-data-finalizacao="@requisicao.DataFinalizacao?.ToString("yyyy-MM-ddTHH:mm")"
+                                        data-descricao-solucao="@requisicao.DescricaoSolucao"
+                                        data-requisitante-nome="@requisicao.RequisitanteNome">
+                                    Editar
+                                </button>
+                                <a href="#" class="btn btn-secondary"
+                                   onclick="baixarPDF('@requisicao.Id')">
+                                    Baixar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/vendor/css/contra.css">
+
+        <div class="alert alert-warning text-center" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> Nenhuma requisição encontrada.
+        </div>
+    }
+</div>
+
+<!-- Modal de Edição -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Editar Requisição</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="Id" name="Id">
+                    <div class="mb-3">
+                        <label for="RequisitanteNome" class="form-label">Requisitante Nome</label>
+                        <input type="text" class="form-control" id="RequisitanteNome" name="Requisitante" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Descricao" class="form-label">Relatório</label>
+                        <input type="text" class="form-control" id="Descricao" name="Descricao" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Status" class="form-label">Status</label>
+                        <select class="form-select" id="Status" name="Status">
+                            <option value="Pendente">Pendente</option>
+                            <option value="Andamento">Andamento</option>
+                            <option value="Aguardando">Aguardando</option>
+                            <option value="Cancelado">Cancelado</option>
+                            <option value="Concluido">Concluido</option>
+                        </select>
+                    </div>
+                    <div id="finalizacaoSection" class="mb-3">
+                        <label for="DataFinalizacao" class="form-label">Data de Alteração</label>
+                        <input type="datetime-local" class="form-control" id="DataFinalizacao" name="DataFinalizacao">
+                    </div>
+                    <div id="solucaoSection" class="mb-3">
+                        <label for="DescricaoSolucao" class="form-label">Descrição da Solução</label>
+                        <textarea class="form-control" id="DescricaoSolucao" name="DescricaoSolucao"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section VendorScripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+}
+
+@functions {
+    public string GetStatusBadgeClass(string status)
+    {
+        switch (status)
+        {
+            case "Pendente": return "status-pendente";
+            case "Andamento": return "status-andamento";
+            case "Aguardando": return "status-aguardando";
+            case "Cancelado": return "status-cancelado";
+            case "Concluido": return "status-concluido";
+            default: return "status-unknown";
+        }
+    }
+}
+@section PageScripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var editModal = document.getElementById('editModal');
+            var bootstrapModal = new bootstrap.Modal(editModal);
+
+            editModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+
+                var id = button.getAttribute('data-id');
+                var descricao = button.getAttribute('data-descricao');
+                var status = button.getAttribute('data-status');
+                var dataFinalizacao = button.getAttribute('data-data-finalizacao');
+                var descricaoSolucao = button.getAttribute('data-descricao-solucao');
+                var requisitanteNome = button.getAttribute('data-requisitante-nome');
+
+                var modalTitle = editModal.querySelector('.modal-title');
+                var descricaoInput = editModal.querySelector('#Descricao');
+                var statusSelect = editModal.querySelector('#Status');
+                var dataFinalizacaoInput = editModal.querySelector('#DataFinalizacao');
+                var descricaoSolucaoTextarea = editModal.querySelector('#DescricaoSolucao');
+                var idInput = editModal.querySelector('#Id');
+                var requisitanteNomeInput = editModal.querySelector('#RequisitanteNome');
+
+                modalTitle.textContent = 'Editar Requisição';
+                descricaoInput.value = descricao;
+                statusSelect.value = status;
+                idInput.value = id;
+                requisitanteNomeInput.value = requisitanteNome;
+
+                if (dataFinalizacao) {
+                    dataFinalizacaoInput.value = dataFinalizacao.replace(' ', 'T');
+                } else {
+                    dataFinalizacaoInput.value = '';
+                }
+
+                descricaoSolucaoTextarea.value = descricaoSolucao || '';
+
+                document.getElementById('finalizacaoSection').classList.remove('d-none');
+            });
+
+            var form = document.getElementById('editForm');
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var formData = {
+                    Id: document.getElementById('Id').value,
+                    Requisitante: document.getElementById('RequisitanteNome').value,
+                    Descricao: document.getElementById('Descricao').value,
+                    DescricaoSolucao: document.getElementById('DescricaoSolucao').value,
+                    Status: document.getElementById('Status').value,
+                    DataFinalizacao: document.getElementById('DataFinalizacao').value
+                };
+
+                fetch('/Dashboards/Atualizar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                }).then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Requisição atualizada com sucesso!');
+                            var editModalInstance = bootstrap.Modal.getInstance(editModal);
+                            editModalInstance.hide();
+                            window.location.reload();
+                        } else {
+                            alert('Erro ao atualizar a requisição: ' + data.message);
+                        }
+                    });
+            });
+
+            document.getElementById('filterForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var formData = new URLSearchParams(new FormData(this)).toString();
+
+                fetch('/Dashboards/FiltrarRequisicoes?' + formData, {
+                    method: 'GET'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            updateTable(data.requisicoes);
+                        } else {
+                            alert('Erro ao filtrar as requisições: ' + data.message);
+                        }
+                    });
+            });
+        });
+
+        function updateTable(requisicoes) {
+            var tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+
+            requisicoes.forEach(function (requisicao) {
+                var row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="text-truncateName">${requisicao.requisitanteNome}</td>
+                    <td class="text-truncate">${requisicao.descricao}</td>
+                    <td class="text-truncate">${requisicao.descricaoSolucao}</td>
+                    <td>
+                          <span class="status-badge ${getStatusBadgeClass(requisicao.status)}">
+                                                     ${getStatusClass(requisicao.status)}
+                           </span>
+                   </td>
+                    <td>
+                        <button type="button" class="btn btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editModal"
+                                data-id="${requisicao.id}"
+                                data-descricao="${requisicao.descricao}"
+                                data-status="${requisicao.status}"
+                                data-data-finalizacao="${requisicao.dataFinalizacao ? requisicao.dataFinalizacao.replace(' ', 'T') : ''}"
+                                data-descricao-solucao="${requisicao.descricaoSolucao}"
+                                data-requisitante-nome="${requisicao.requisitanteNome}">
+                            Editar
+                        </button>
+                        <a href="#" class="btn btn-secondary"
+                           onclick="baixarPDF('${requisicao.id}')">
+                            Baixar
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 1: return "status-pendente";
+                case 2: return "status-andamento";
+                case 3: return "status-aguardando";
+                case 4: return "status-cancelado";
+                case 5: return "status-concluido";
+                default: return "status-unknown";
+            }
+        }
+        function getStatusClass(status) {
+            switch (status) {
+                case 1: return "Pendente";
+                case 2: return "Andamento";
+                case 3: return "Aguardando";
+                case 4: return "Cancelado";
+                case 5: return "Concluido";
+                default: return "status-unknown";
+            }
+        }
+        function baixarPDF(id) {
+            fetch('/Dashboards/GerarPDF', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    'id': id
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao gerar o PDF');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'requisicao-' + id + '.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => console.error('Erro ao baixar o PDF:', error));
+        }
+    </script>
+    <script src="~/js/dashboards-analytics.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+}
+

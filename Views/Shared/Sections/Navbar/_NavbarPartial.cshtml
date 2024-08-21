@@ -1,0 +1,116 @@
+@using AspnetCoreMvcFull.Models;
+@model PartialModel;
+
+@* ! Brand demo (display only for navbar-full and hide on below xl) *@
+@if (ViewData["navbarFull"] != null)
+{
+    <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-4">
+        <a asp-controller="Dashboards" asp-action="Index" class="app-brand-link gap-2">
+            <span class="app-brand-logo demo">
+                @await Html.PartialAsync("../_Partials/_Macros")
+            </span>
+            <span class="app-brand-text demo menu-text fw-semibold ms-1">@TempData.Peek("appName")</span>
+        </a>
+    </div>
+}
+
+@* ! Not required for layout-without-menu *@
+@if (ViewData["navbarHideToggle"] == null)
+{
+    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
+        <a class="nav-item nav-link px-0 me-xl-4" href="#">
+            <i class="mdi mdi-menu mdi-24px"></i>
+        </a>
+    </div>
+}
+
+<div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
+
+    <!-- Search -->
+    <div class="navbar-nav align-items-center">
+        <div class="nav-item d-flex align-items-center">
+            <i class="mdi mdi-magnify mdi-24px lh-0"></i>
+            <input type="text" class="form-control border-0 shadow-none bg-body" placeholder="Search..." aria-label="Search...">
+        </div>
+    </div>
+    <!-- /Search -->
+
+    <ul class="navbar-nav flex-row align-items-center ms-auto">
+
+        <!-- User -->
+        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+            <a class="nav-link dropdown-toggle hide-arrow p-0" href="#" data-bs-toggle="dropdown">
+                <div class="avatar avatar-online">
+                    @{
+                        if (Model != null)
+                        {
+                            <img src="@Url.Content(Model.front.IconUrl)" alt class="w-px-40 h-auto rounded-circle">
+                        }
+                    }
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end mt-3 py-2">
+                <li>
+                    <a class="dropdown-item pb-2 mb-1" href="#">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 me-2 pe-1">
+                                <div class="avatar avatar-online">
+                                    @{
+                                        if (Model != null)
+                                        {
+                                            <img src="@Url.Content(Model.front.IconUrl)" alt="Icon" class="w-px-40 h-auto rounded-circle">
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                @{
+                                    if (@ViewBag.Username != null)
+                                    {
+                                        <h6 class="mb-0">@ViewBag.Username</h6>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <div class="dropdown-divider my-1"></div>
+                </li>
+                <li>
+                    <form action="/Dashboards/RedirecToPerson" method="post" style="display:inline;">
+                        <button type="submit" class="dropdown-item" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;">
+                            <a class="dropdown-item" href="#">
+                                <i class="mdi mdi-account-outline me-1 mdi-20px"></i>
+                                <span class="align-middle">Meu Perfil</span>
+                        </button>
+                    </form>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="#">
+                      <form action="/Dashboards/RedirecToSettings" method="post" style="display:inline;">
+                        <button type="submit" class="dropdown-item" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer;">
+                        <i class="mdi mdi-cog-outline me-1 mdi-20px"></i>
+                        <span class="align-middle">Configurações</span>
+                            </button>
+                        </form>
+                    </a>
+                </li>
+                <li>
+                    <div class="dropdown-divider my-1"></div>
+                </li>
+                <li>
+                    <form action="/Auth/LogOut" method="post" style="display:inline;">
+                        <button type="submit" class="dropdown-item" style="background: none; border: none; padding: 20; margin: 0; cursor: pointer;">
+                            <i class="mdi mdi-power me-1 mdi-20px"></i>
+                            <span class="align-middle">Sair</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+        <!--/ User -->
+
+    </ul>
+</div>

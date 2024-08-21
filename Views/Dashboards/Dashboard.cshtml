@@ -1,0 +1,223 @@
+@using AspnetCoreMvcFull.Models;
+@model PartialModel;
+
+@{
+    ViewData["Title"] = "FeF Connect";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .chart-legend {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-pendente {
+            background-color: #d6d6d6;
+            color: #1c1c1c;
+        }
+
+        .status-andamento {
+            background-color: #FFC107;
+            color: #333333;
+        }
+
+        .status-aguardando {
+            background-color: #d6d6d6;
+            color: #1c1c1c;
+        }
+
+        .status-cancelado {
+            background-color: #fc3a3a;
+        }
+
+        .status-concluido {
+            background-color: #4fd156;
+        }
+    </style>
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-center align-items-center flex-column">
+        <div class="profile-header text-center mb-4">
+            <h2 class="display-4">Gráfico Geral de Requisições</h2>
+        </div>
+
+        <div class="card shadow-lg" style="width: 100%; max-width: 1200px;">
+            <div class="card-body p-4" style="position: relative; padding-bottom: 60px;">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section VendorScripts {
+    <script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+}
+
+@section PageScripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ctx = document.getElementById('statusChart').getContext('2d');
+
+            // Defina as cores para cada status
+            var colors = {
+                'Pendente': '#d6d6d6',
+                'Andamento': '#FFC107',
+                'Aguardando': '#d6d6d6',
+                'Cancelado': '#fc3a3a',
+                'Concluido': '#4fd156'
+            };
+
+            var statusLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Statuses));
+            var statusData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Counts));
+
+            var datasetColors = statusLabels.map(function (status) {
+                return colors[status] || '#cccccc'; // Fallback color
+            });
+
+            var statusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        label: '# de Requisições',
+                        data: statusData,
+                        backgroundColor: datasetColors,
+                        borderColor: datasetColors.map(color => {
+                            return adjustColor(color, -0.2); // Escurecer a cor para a borda
+                        }),
+                        borderWidth: 1,
+                        borderRadius: 5, // Bordas arredondadas nas barras
+                        hoverBackgroundColor: datasetColors.map(color => {
+                            return lightenColor(color, 0.2); // Clarear a cor para hover
+                        }),
+                        hoverBorderColor: '#ffffff',
+                        hoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Número de Requisições'
+                            },
+                            ticks: {
+                                color: '#6c757d'
+                            },
+                            grid: {
+                                color: '#e9ecef',
+                                borderColor: '#dee2e6'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Status'
+                            },
+                            ticks: {
+                                color: '#6c757d'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Desativar a legenda padrão do gráfico
+                        },
+                        tooltip: {
+                            backgroundColor: '#ffffff',
+                            borderColor: '#6c757d',
+                            borderWidth: 1,
+                            titleColor: '#000000',
+                            bodyColor: '#000000',
+                            callbacks: {
+                                label: function (context) {
+                                    var label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Adicionar legendas personalizadas
+            var legend = document.getElementById('chartLegend');
+            var legendHtml = '<ul class="list-unstyled">';
+            statusLabels.forEach(function (label, index) {
+                legendHtml += '<li><span style="background-color: ' + datasetColors[index] + '; border: 1px solid ' + adjustColor(datasetColors[index], -0.2) + '; border-radius: 5px; display: inline-block; width: 12px; height: 12px; margin-right: 5px;"></span> ' + label + '</li>';
+            });
+            legendHtml += '</ul>';
+            legend.innerHTML = legendHtml;
+
+            function adjustColor(color, amount) {
+                // Função para escurecer a cor
+                var r = parseInt(color.substr(1, 2), 16);
+                var g = parseInt(color.substr(3, 2), 16);
+                var b = parseInt(color.substr(5, 2), 16);
+                r = Math.min(255, Math.max(0, r + amount * 255));
+                g = Math.min(255, Math.max(0, g + amount * 255));
+                b = Math.min(255, Math.max(0, b + amount * 255));
+                return '#' + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+            }
+
+            function lightenColor(color, amount) {
+                // Função para clarear a cor
+                var r = parseInt(color.substr(1, 2), 16);
+                var g = parseInt(color.substr(3, 2), 16);
+                var b = parseInt(color.substr(5, 2), 16);
+                r = Math.min(255, Math.max(0, r + amount * 255));
+                g = Math.min(255, Math.max(0, g + amount * 255));
+                b = Math.min(255, Math.max(0, b + amount * 255));
+                return '#' + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
+            }
+        });
+    </script>
+}

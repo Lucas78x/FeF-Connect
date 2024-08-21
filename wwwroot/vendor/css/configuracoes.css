@@ -1,0 +1,131 @@
+/* Configurações gerais */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f5f7;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+.settings-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+  .settings-header h2 {
+    font-size: 2rem;
+    color: #4a4a4a;
+  }
+
+  .settings-header p {
+    font-size: 1.1rem;
+    color: #7a7a7a;
+  }
+
+/* Cartões de configuração */
+.card {
+  border: none;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  background-color: #ffffff;
+}
+
+.card-body {
+  padding: 30px;
+}
+
+.settings-section-title {
+  font-size: 1.5rem;
+  color: #4a4a4a;
+  margin-bottom: 20px;
+  font-weight: bold;
+  border-bottom: 2px solid #f4f5f7;
+  padding-bottom: 10px;
+}
+
+/* Etiquetas e valores */
+.settings-info-label {
+  font-weight: bold;
+  color: #555;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+  .settings-info-label i {
+    color: #007bff;
+    margin-right: 10px;
+  }
+
+.settings-info-value {
+  font-size: 1rem;
+  color: #7a7a7a;
+  margin-top: 5px;
+  padding-left: 10px;
+}
+
+/* Inputs e botões */
+.form-control {
+  border-radius: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  color: #333;
+}
+
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: none;
+  }
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+  .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+  }
+
+/* Layout responsivo */
+@media (max-width: 768px) {
+  .settings-section-title {
+    font-size: 1.3rem;
+  }
+
+  .settings-info-label {
+    font-size: 0.9rem;
+  }
+
+  .form-control, .btn-primary {
+    font-size: 0.9rem;
+  }
+}
+
+/* Customização adicional */
+.card {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+input[type="password"], select {
+  font-family: 'Roboto', sans-serif;
+}
