@@ -23,57 +23,58 @@ namespace AspnetCoreMvcFull.Controllers
 
     public async Task<IActionResult> Tutorial()
     {
-      if (_validateSession.IsUserValid())
-      {
-        var handler = new HttpClientHandler
-        {
-          ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-        };
-
-        var client = new HttpClient(handler);
-        var id = HttpContext.Session.GetInt32("Id") ?? -1;
-
-        try
-        {
-
-          client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-          var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-          if (response.IsSuccessStatusCode)
-          {
-            var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
-            if (funcionario != null)
-            {
-              _validateSession.SetFuncionarioId(funcionario.Id);
-              _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
-              var frontModel = new FrontModel(UserIcon());
-              var partialModel = new PartialModel();
-              partialModel.front = frontModel;
-              partialModel.funcionario = funcionario;
-
-              partialModel.Documents = GetDocumentsFromDirectory();
-              return View("Tutorial", partialModel);
-            }
-            else
-            {
-
-              return RedirectToPage("MiscError", "Pages");
-            }
-          }
-        }
-        catch
-        {
-          return View("MiscError", "Pages");
-
-        }
-      }
-      else
+      if (!_validateSession.IsUserValid())
       {
         return RedirectToAction("LoginBasic", "Auth");
       }
 
-      return RedirectToAction("LoginBasic", "Auth");
+      var id = HttpContext.Session.GetInt32("Id") ?? -1;
+      if (id == -1)
+      {
+        return RedirectToPage("MiscError", "Pages");
+      }
+
+      try
+      {
+        using var handler = new HttpClientHandler
+        {
+          ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        };
+
+        using var client = new HttpClient(handler);
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
+
+        var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
+        if (!response.IsSuccessStatusCode)
+        {
+          return RedirectToPage("MiscError", "Pages");
+        }
+
+        var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
+        if (funcionario == null)
+        {
+          return RedirectToPage("MiscError", "Pages");
+        }
+
+        _validateSession.SetFuncionarioId(funcionario.Id);
+        _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
+
+        var frontModel = new FrontModel(UserIcon());
+        var partialModel = new PartialModel
+        {
+          front = frontModel,
+          funcionario = funcionario,
+          Documents = GetDocumentsFromDirectory()
+        };
+
+        return View("Tutorial", partialModel);
+      }
+      catch
+      {
+        return View("MiscError", "Pages");
+      }
     }
+
     public List<DocumentViewModel> GetDocumentsFromDirectory()
     {
 
@@ -165,7 +166,6 @@ namespace AspnetCoreMvcFull.Controllers
           await file.CopyToAsync(stream);
         }
 
-        // Redirect to the same page to refresh the document list
         return Json(new { success = true });
       }
 

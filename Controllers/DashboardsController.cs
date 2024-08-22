@@ -29,78 +29,82 @@ public class DashboardsController : Controller
 
   public async Task<IActionResult> Dashboard()
   {
-    var handler = new HttpClientHandler
+    if (!_validateSession.IsUserValid())
     {
-      ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-    };
+      return RedirectToAction("LoginBasic", "Auth");
+    }
 
-    var client = new HttpClient(handler);
     var id = HttpContext.Session.GetInt32("Id") ?? -1;
+    if (id == -1)
+    {
+      return RedirectToAction("LoginBasic", "Auth");
+    }
 
     try
     {
+      using var handler = new HttpClientHandler
+      {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+      };
 
+      using var client = new HttpClient(handler);
       client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
 
-      var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-      if (response.IsSuccessStatusCode)
+      var funcionarioResponse = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
+      if (!funcionarioResponse.IsSuccessStatusCode)
       {
-        var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
-        if (funcionario != null)
+        return RedirectToAction("LoginBasic", "Auth");
+      }
+
+      var funcionario = await funcionarioResponse.Content.ReadFromJsonAsync<FuncionarioDTO>();
+      if (funcionario == null)
+      {
+        return RedirectToAction("LoginBasic", "Auth");
+      }
+
+      _validateSession.SetFuncionarioId(funcionario.Id);
+      _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
+
+      var frontModel = new FrontModel(UserIcon());
+      var partialModel = new PartialModel
+      {
+        front = frontModel,
+        funcionario = funcionario
+      };
+
+      var requisicoesResponse = await client.GetAsync($"http://localhost:5235/api/Auth/listaRequisicoes");
+      if (requisicoesResponse.IsSuccessStatusCode)
+      {
+        var requisicoes = await requisicoesResponse.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
+        if (requisicoes != null)
         {
-          _validateSession.SetFuncionarioId(funcionario.Id);
-          _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
-          var frontModel = new FrontModel(UserIcon());
-          var partialModel = new PartialModel();
-          partialModel.front = frontModel;
-          partialModel.funcionario = funcionario;
-          response = await client.GetAsync($"http://localhost:5235/api/Auth/listaRequisicoes");
-          if (response.IsSuccessStatusCode)
-          {
-            var _requisicoes = await response.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
-            if (_requisicoes != null)
-            {
-              var requisicoesPorStatus = _requisicoes
-                 .GroupBy(r => r.Status)
-                 .Select(group => new
-                 {
-                   Status = group.Key.ToString(),
-                   Count = group.Count()
-                 }).ToList();
-              ViewBag.Statuses = requisicoesPorStatus.Select(r => r.Status).ToList();
-              ViewBag.Counts = requisicoesPorStatus.Select(r => r.Count).ToList();
-            }
-            else
-            { 
+          var requisicoesPorStatus = requisicoes
+              .GroupBy(r => r.Status)
+              .Select(group => new
+              {
+                Status = group.Key.ToString(),
+                Count = group.Count()
+              }).ToList();
 
-              ViewBag.Counts = 0;
-            }
-
-          }
-          else
-          {
-
-            ViewBag.Counts = 0;
-          }
-
-          return View(partialModel);
-
+          ViewBag.Statuses = requisicoesPorStatus.Select(r => r.Status).ToList();
+          ViewBag.Counts = requisicoesPorStatus.Select(r => r.Count).ToList();
         }
         else
         {
-          return RedirectToAction("LoginBasic", "Auth");
+          ViewBag.Counts = 0;
         }
       }
       else
       {
-        return RedirectToAction("LoginBasic", "Auth");
+        ViewBag.Counts = 0;
       }
+
+      return View(partialModel);
     }
     catch
     {
       return RedirectToAction("LoginBasic", "Auth");
     }
-
   }
   private string UserIcon()
   {
@@ -137,49 +141,54 @@ public class DashboardsController : Controller
   //TODO: Separar Depois
   public async Task<IActionResult> Pessoal()
   {
-    if (_validateSession.IsUserValid())
+    if (!_validateSession.IsUserValid())
     {
-      var handler = new HttpClientHandler
+      return RedirectToAction("LoginBasic", "Auth");
+    }
+
+    var id = HttpContext.Session.GetInt32("Id") ?? -1;
+    if (id == -1)
+    {
+      return RedirectToPage("MiscError", "Pages");
+    }
+
+    try
+    {
+      using var handler = new HttpClientHandler
       {
         ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
       };
 
-      var client = new HttpClient(handler);
-      var id = HttpContext.Session.GetInt32("Id") ?? -1;
+      using var client = new HttpClient(handler);
+      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
 
-      try
+      var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
+      if (!response.IsSuccessStatusCode)
       {
-
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-        var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-        if (response.IsSuccessStatusCode)
-        {
-          var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
-          if (funcionario != null)
-          {
-            _validateSession.SetFuncionarioId(funcionario.Id);
-            var frontModel = new FrontModel(UserIcon());
-            var partialModel = new PartialModel();
-            partialModel.front = frontModel;
-            partialModel.funcionario = funcionario;
-
-            return View("Pessoal", partialModel);
-          }
-          else
-          {
-
-            return RedirectToPage("MiscError", "Pages");
-          }
-        }
+        return RedirectToPage("MiscError", "Pages");
       }
-      catch
+
+      var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
+      if (funcionario == null)
       {
-        return View("MiscError", "Pages");
-
+        return RedirectToPage("MiscError", "Pages");
       }
+
+      _validateSession.SetFuncionarioId(funcionario.Id);
+
+      var frontModel = new FrontModel(UserIcon());
+      var partialModel = new PartialModel
+      {
+        front = frontModel,
+        funcionario = funcionario
+      };
+
+      return View("Pessoal", partialModel);
     }
-    return RedirectToAction("LoginBasic", "Auth");
+    catch
+    {
+      return View("MiscError", "Pages");
+    }
   }
   public IActionResult RedirecToPerson()
   {
@@ -218,48 +227,54 @@ public class DashboardsController : Controller
 
   public async Task<IActionResult> Settings()
   {
-    if (_validateSession.IsUserValid())
+    if (!_validateSession.IsUserValid())
     {
-      var handler = new HttpClientHandler
+      return RedirectToAction("LoginBasic", "Auth");
+    }
+
+    var id = HttpContext.Session.GetInt32("Id") ?? -1;
+    if (id == -1)
+    {
+      return RedirectToPage("MiscError", "Pages");
+    }
+
+    try
+    {
+      using var handler = new HttpClientHandler
       {
         ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
       };
 
-      var client = new HttpClient(handler);
-      var id = HttpContext.Session.GetInt32("Id") ?? -1;
+      using var client = new HttpClient(handler);
+      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
 
-      try
+      var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
+      if (!response.IsSuccessStatusCode)
       {
-
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-        var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-        if (response.IsSuccessStatusCode)
-        {
-          var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
-          if (funcionario != null)
-          {
-            _validateSession.SetFuncionarioId(funcionario.Id);
-            var frontModel = new FrontModel(UserIcon());
-            var partialModel = new PartialModel();
-            partialModel.front = frontModel;
-            partialModel.funcionario = funcionario;
-            return View("Settings", partialModel);
-          }
-          {
-
-            return RedirectToPage("MiscError", "Pages");
-          }
-        }
-      }
-      catch
-      {
-        return View("MiscError", "Pages");
-
+        return RedirectToPage("MiscError", "Pages");
       }
 
+      var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
+      if (funcionario == null)
+      {
+        return RedirectToPage("MiscError", "Pages");
+      }
+
+      _validateSession.SetFuncionarioId(funcionario.Id);
+
+      var frontModel = new FrontModel(UserIcon());
+      var partialModel = new PartialModel
+      {
+        front = frontModel,
+        funcionario = funcionario
+      };
+
+      return View("Settings", partialModel);
     }
-    return RedirectToAction("LoginBasic", "Auth");
+    catch
+    {
+      return RedirectToPage("MiscError", "Pages");
+    }
   }
   public IActionResult RedirecToSettings()
   {
