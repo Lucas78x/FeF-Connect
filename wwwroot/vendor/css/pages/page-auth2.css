@@ -1,12 +1,23 @@
 .authentication-wrapper {
+  position: relative; /* Ensures child elements are positioned relative to this wrapper */
   display: flex;
   flex-basis: 100%;
   min-height: 100vh;
   width: 100%;
-  background-image: url('/img/backgrounds/fundo.png'); /* Adicione aqui o caminho da sua imagem */
-  background-size: cover; /* Para garantir que a imagem cubra todo o fundo */
-  background-position: center; /* Centraliza a imagem */
-  background-repeat: no-repeat; /* Evita repetição da imagem */
+  overflow: hidden; /* Ensures the video does not overflow outside the wrapper */
+}
+
+#background-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  z-index: -1; /* Sends the video to the back */
+  transform: translate(-50%, -50%);
+  background-size: cover; /* Ensures the video covers the entire area */
 }
 
   .authentication-wrapper .authentication-inner {
