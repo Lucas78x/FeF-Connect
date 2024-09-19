@@ -2,7 +2,7 @@ using AspnetCoreMvcFull.Enums;
 
 namespace AspnetCoreMvcFull.DTO
 {
-  public class FuncionarioDTO
+  public class FuncionarioModel
   {
     public Guid Id { get; set; }
     public string Nome { get; set; }
@@ -14,9 +14,11 @@ namespace AspnetCoreMvcFull.DTO
     public DateTime DataNascimento { get; set; }
     public string Cargo { get; set; }
     public TipoPermissaoEnum Permissao { get; set; }
-    public FuncionarioDTO() { }
 
-    public FuncionarioDTO(string nome, string sobrenome, string cpf, string rg, TipoGeneroEnum genero, string email, DateTime dataNascimento, string cargo, TipoPermissaoEnum permissao)
+    public string ImagemUrl;
+    public FuncionarioModel() { }
+
+    public FuncionarioModel(string nome, string sobrenome, string cpf, string rg, TipoGeneroEnum genero, string email, DateTime dataNascimento, string cargo, TipoPermissaoEnum permissao)
     {
       Id = Guid.NewGuid();
       Nome = nome;

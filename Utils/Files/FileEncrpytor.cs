@@ -1,4 +1,5 @@
 using AspnetCoreMvcFull.Enums;
+using AspnetCoreMvcFull.Models;
 using System.Security.Cryptography;
 
 namespace AspnetCoreMvcFull.Utils
@@ -132,42 +133,80 @@ namespace AspnetCoreMvcFull.Utils
           return "~/Users/Partial/Default.png";
       }
     }
-    public string UserContraCheque(string patch, string oldPatch, string password, int Id)
+    public List<PayslipModel> UserCheque(string patch, string oldPatch, string password, int id)
     {
-      string userDirectory = Path.Combine(patch, Id.ToString());
+      string userDirectory = Path.Combine(patch, id.ToString());
       string chequeDirectory = Path.Combine(userDirectory, "Cheque");
 
-      if (!Directory.Exists(patch))
-      {
+      EnsureDirectoryExists(patch, password);
+      EnsureDirectoryExists(userDirectory);
+      EnsureDirectoryExists(chequeDirectory);
 
-        Directory.CreateDirectory(patch);
-        // EncryptFile(patch, password);
+      var payslipFiles = new DirectoryInfo(chequeDirectory).GetFiles("*.pdf")
+                          .OrderByDescending(f => f.LastWriteTime)
+                          .ToList();
+
+      var payslips = new List<PayslipModel>();
+
+      foreach (var file in payslipFiles)
+      {
+    
+        string relativePath = file.FullName.Replace(oldPatch, "~").Replace("\\", "/");
+
+        payslips.Add(new PayslipModel
+        {
+          Url = relativePath,
+          Date = file.LastWriteTime
+        });
       }
 
-      if (!Directory.Exists(userDirectory))
-      {
-        Directory.CreateDirectory(userDirectory); 
-      }
-
-      if (!Directory.Exists(chequeDirectory))
-      {
-        Directory.CreateDirectory(chequeDirectory);
-      }
-
-      var latestFile = new DirectoryInfo(chequeDirectory).GetFiles()
-                       .OrderByDescending(f => f.LastWriteTime)
-                       .FirstOrDefault();
-      if (latestFile != null)
-      {
-        string absolutePath = Path.Combine(chequeDirectory, latestFile.Name);
-        string relativePath = absolutePath.Replace(oldPatch, "~");
-        relativePath = relativePath.Replace("\\", "/");
-
-        return relativePath;
-      }
-
-      return null;
+      return payslips;
     }
+    public PayslipModel UserCheque(string patch, string oldPatch, string password, int id, DateTime? filterDate)
+    {
+      string userDirectory = Path.Combine(patch, id.ToString());
+      string chequeDirectory = Path.Combine(userDirectory, "Cheque");
+
+      EnsureDirectoryExists(patch, password);
+      EnsureDirectoryExists(userDirectory);
+      EnsureDirectoryExists(chequeDirectory);
+
+      var payslipFiles = new DirectoryInfo(chequeDirectory).GetFiles("*.pdf")
+                            .OrderByDescending(f => f.LastWriteTime)
+                            .ToList();
+
+      var matchingFile = payslipFiles
+          .FirstOrDefault(file =>
+              (!filterDate.HasValue) ||
+              (file.LastWriteTime.Year == filterDate.Value.Year &&
+               file.LastWriteTime.Month == filterDate.Value.Month &&
+               file.LastWriteTime.Day == filterDate.Value.Day &&
+               file.LastWriteTime.Hour == filterDate.Value.Hour &&
+               file.LastWriteTime.Minute == filterDate.Value.Minute));
+
+      if (matchingFile != null)
+      {
+        string relativePath = matchingFile.FullName.Replace(oldPatch, "~").Replace("\\", "/");
+
+        return new PayslipModel
+        {
+          Url = relativePath,
+          Date = matchingFile.LastWriteTime
+        };
+      }
+
+      return null; 
+    }
+
+   
+    private void EnsureDirectoryExists(string path, string password = null)
+    {
+      if (!Directory.Exists(path))
+      {
+        Directory.CreateDirectory(path);      
+      }
+    }
+
     public string UserEscala(string patch, string oldPatch, string password)
     {
       string userDirectory = Path.Combine(patch, "Partial"); // TODO: Externalizar

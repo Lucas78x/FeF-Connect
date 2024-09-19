@@ -30,7 +30,7 @@
     @* ! Full version menu-items *@
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
-        <li class='menu-item@(currentPage.EndsWith("/") || currentPage.StartsWith("/Dashboards") ? " active open" : "")'>
+        <li class='menu-item@(currentPage.EndsWith("/") || currentPage.StartsWith("/Dashboards") || currentPage.StartsWith("/Relatorios") ? " active open" : "")'>
             <a href="#" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons mdi mdi-home-outline"></i>
                 <div>Pessoal</div>
@@ -45,6 +45,16 @@
                         </button>
                     </form>
                 </li>
+
+                <li class='menu-item@(currentPage == "/Relatorios/Relatorios" ? " active" : "")'>
+                    <form action="/Relatorios/RedirecToRelatorios" method="post" class="menu-link">
+                        <button type="submit" style="all: unset; cursor: pointer;">
+                            <div>Relatórios</div>
+                            <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                        </button>
+                    </form>
+                </li>
+
                 <li class='menu-item@(currentPage == "/Dashboards/Requisicoes" ? " active" : "")'>
                     <form action="/Dashboards/RedirecToRequisicoes" method="post" class="menu-link">
                         <button type="submit" style="all: unset; cursor: pointer;">
@@ -248,15 +258,15 @@
         }
 
 
-        <li class='menu-item@(currentPage.StartsWith("/Auth") ? " active open" : "")'>
+        <li class='menu-item@(currentPage.StartsWith("/Chat") ? " active open" : "")'>
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons mdi mdi-lock-open-outline"></i>
-                <div>Authentications</div>
+                <div>Conversas</div>
             </a>
             <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Auth/LoginBasic" ? " active" : "")'>
-                    <a asp-controller="Auth" asp-action="LoginBasic" class="menu-link" target="_blank">
-                        <div>Login</div>
+                <li class='menu-item@(currentPage == "/Chat/Chat" ? " active" : "")'>
+                    <a asp-controller="Chat" asp-action="Chat" class="menu-link" target="_blank">
+                        <div>Chat</div>
                     </a>
                 </li>
                 <li class='menu-item@(currentPage == "/Auth/RegisterBasic" ? " active" : "")'>

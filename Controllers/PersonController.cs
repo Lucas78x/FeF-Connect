@@ -37,7 +37,7 @@ namespace AspnetCoreMvcFull.Controllers
           var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
           if (response.IsSuccessStatusCode)
           {
-            var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
+            var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
             if (funcionario != null)
             {
               return View("Pessoal",funcionario);

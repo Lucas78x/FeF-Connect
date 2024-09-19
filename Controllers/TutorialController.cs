@@ -50,7 +50,7 @@ namespace AspnetCoreMvcFull.Controllers
           return RedirectToPage("MiscError", "Pages");
         }
 
-        var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioDTO>();
+        var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
         if (funcionario == null)
         {
           return RedirectToPage("MiscError", "Pages");

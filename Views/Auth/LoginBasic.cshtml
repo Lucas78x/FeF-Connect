@@ -7,17 +7,42 @@
     <link rel="stylesheet" href="~/vendor/css/pages/page-auth2.css">
 }
 
+@section PageScripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if there is a saved email in localStorage
+            const savedEmail = localStorage.getItem('rememberedEmail');
+            const rememberMeCheckbox = document.getElementById('remember-me');
+
+            if (savedEmail) {
+                document.getElementById('username').value = savedEmail;
+                rememberMeCheckbox.checked = true;
+            }
+
+            // Save email to localStorage when the form is submitted
+            document.getElementById('formAuthentication').addEventListener('submit', function () {
+                if (rememberMeCheckbox.checked) {
+                    const email = document.getElementById('username').value;
+                    localStorage.setItem('rememberedEmail', email);
+                } else {
+                    localStorage.removeItem('rememberedEmail');
+                }
+            });
+        });
+    </script>
+}
+
 @* ************** Content ************** *@
 
 <div class="position-relative">
     <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner py-4">
-            <div class="position-relative">
+           @*  <div class="position-relative">
                 <!-- Video Background -->
                 <video autoplay muted loop id="background-video">
                     <source src="~/img/backgrounds/background.mp4" type="video/mp4">
                     Your browser does not support the video tag.
-                </video>
+                </video> *@
             <!-- Login -->
             <div class="card p-2">
                 <!-- Logo -->
@@ -30,8 +55,7 @@
                 </div>
                 <!-- /Logo -->
 
-                <div class="card-body mt-2">
-                    <p class="mb-4">Conectados e prontos para ir mais longe.</p>
+                <div class="card-body mt-2">        
 
                     <form id="formAuthentication" class="mb-3" asp-action="ValidateLogin" asp-controller="Auth" method="POST">
                         <div class="form-floating form-floating-outline mb-3">
@@ -53,7 +77,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="remember-me" name="RememberMe">
                                 <label class="form-check-label" for="remember-me">
-                                    Lembrar Email
+                                    Lembrar Usuário
                                 </label>
                             </div>
                             <a href="/Auth/ForgotPasswordBasic" class="float-end mb-1">

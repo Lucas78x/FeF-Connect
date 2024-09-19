@@ -14,6 +14,14 @@
 
 <div class="container my-5">
     <h1 class="mb-4">Requisições</h1>
+    @{
+        if (Model.AdminUser(Model.funcionario.Permissao))
+        {
+            <button type="button" class="btn btn-success mb-4" data-bs-toggle="modal" data-bs-target="#addModal">
+                Solicitar
+            </button>
+        }
+    }
     <form id="filterForm" class="mb-4">
         <div class="row">
             <div class="col-md-3">
@@ -97,6 +105,57 @@
             <i class="fas fa-exclamation-triangle"></i> Nenhuma requisição encontrada.
         </div>
     }
+</div>
+
+<!-- Modal de Adição -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalLabel">Adicionar Requisição</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label for="AddRequisitanteNome" class="form-label">Requisitante</label>
+                        <input type="text" class="form-control" id="AddRequisitanteNome" name="Requisitante" required>
+                    </div>
+
+                    <!-- Nova seção para "Requirido" -->
+                    <div class="mb-3">
+                        <label for="AddRequirido" class="form-label">Requirido</label>
+                        <select class="form-select" id="AddRequirido" name="Requirido" required>
+                            @foreach (var funcionario in ViewBag.Funcionarios)
+                            {
+                                <option value="@funcionario.Id">@funcionario.Nome</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="AddDescricao" class="form-label">Relatório</label>
+                        <input type="text" class="form-control" id="AddDescricao" name="Descricao" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="AddStatus" class="form-label">Status</label>
+                        <select class="form-select" id="AddStatus" name="Status" required>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Andamento">Andamento</option>
+                            <option value="Aguardando">Aguardando</option>
+                            <option value="Cancelado">Cancelado</option>
+                            <option value="Concluido">Concluido</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="AddDescricaoSolucao" class="form-label">Descrição da Solução</label>
+                        <textarea class="form-control" id="AddDescricaoSolucao" name="DescricaoSolucao"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Adicionar</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal de Edição -->
@@ -262,32 +321,32 @@
             requisicoes.forEach(function (requisicao) {
                 var row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="text-truncateName">${requisicao.requisitanteNome}</td>
-                    <td class="text-truncate">${requisicao.descricao}</td>
-                    <td class="text-truncate">${requisicao.descricaoSolucao}</td>
-                    <td>
-                          <span class="status-badge ${getStatusBadgeClass(requisicao.status)}">
-                                                     ${getStatusClass(requisicao.status)}
-                           </span>
-                   </td>
-                    <td>
-                        <button type="button" class="btn btn-primary"
-                                data-bs-toggle="modal"
-                                data-bs-target="#editModal"
-                                data-id="${requisicao.id}"
-                                data-descricao="${requisicao.descricao}"
-                                data-status="${requisicao.status}"
-                                data-data-finalizacao="${requisicao.dataFinalizacao ? requisicao.dataFinalizacao.replace(' ', 'T') : ''}"
-                                data-descricao-solucao="${requisicao.descricaoSolucao}"
-                                data-requisitante-nome="${requisicao.requisitanteNome}">
-                            Editar
-                        </button>
-                        <a href="#" class="btn btn-secondary"
-                           onclick="baixarPDF('${requisicao.id}')">
-                            Baixar
-                        </a>
-                    </td>
-                `;
+                            <td class="text-truncateName">${requisicao.requisitanteNome}</td>
+                            <td class="text-truncate">${requisicao.descricao}</td>
+                            <td class="text-truncate">${requisicao.descricaoSolucao}</td>
+                            <td>
+                                  <span class="status-badge ${getStatusBadgeClass(requisicao.status)}">
+                                                             ${getStatusClass(requisicao.status)}
+                                   </span>
+                           </td>
+                            <td>
+                                <button type="button" class="btn btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editModal"
+                                        data-id="${requisicao.id}"
+                                        data-descricao="${requisicao.descricao}"
+                                        data-status="${requisicao.status}"
+                                        data-data-finalizacao="${requisicao.dataFinalizacao ? requisicao.dataFinalizacao.replace(' ', 'T') : ''}"
+                                        data-descricao-solucao="${requisicao.descricaoSolucao}"
+                                        data-requisitante-nome="${requisicao.requisitanteNome}">
+                                    Editar
+                                </button>
+                                <a href="#" class="btn btn-secondary"
+                                   onclick="baixarPDF('${requisicao.id}')">
+                                    Baixar
+                                </a>
+                            </td>
+                        `;
                 tbody.appendChild(row);
             });
         }
@@ -340,6 +399,43 @@
                 })
                 .catch(error => console.error('Erro ao baixar o PDF:', error));
         }
+    </script>
+    <script>
+        document.getElementById("addForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+
+            // Captura os dados do formulário
+            const formData = new FormData(this);
+
+            // Converte o FormData para um objeto JavaScript
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                // Envia os dados usando a API Fetch
+                const response = await fetch('/requisicao/adicionar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Verifica se a resposta foi bem-sucedida
+                if (response.ok) {
+                    alert("Requisição adicionada com sucesso!");
+                    // Fecha o modal e limpa o formulário
+                    this.reset();
+                    $('#addModal').modal('hide');
+                    location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${errorData.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao enviar a requisição:', error);
+                alert('Erro ao enviar a requisição.');
+            }
+        });
     </script>
     <script src="~/js/dashboards-analytics.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

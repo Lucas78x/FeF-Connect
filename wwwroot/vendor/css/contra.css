@@ -1,39 +1,37 @@
-/* Estilo geral */
+/* Estilo Geral */
 body {
-  background-color: rgba(241, 243, 245, 0.8); /* Fundo branco com opacidade */
+  background-color: #f8f9fa;
   font-family: 'Roboto', sans-serif;
-  color: #212529;
-  padding: 0;
+  color: #495057;
   margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 .container {
-  margin-top: 40px;
+  margin-top: 60px;
+  padding: 0 15px;
 }
 
-.profile-header h2 {
-  font-weight: 700;
-  font-size: 2.5rem;
-  color: #343a40;
+.profile-header {
+  text-align: center;
+  margin-bottom: 40px;
 }
 
-.profile-header p {
-  font-size: 1.1rem;
-  color: #6c757d;
-}
+  .profile-header h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #343a40;
+    margin-bottom: 10px;
+  }
 
-.card {
-  border: none;
-  border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.9); /* Fundo branco com opacidade */
-}
+  .profile-header p {
+    font-size: 1.1rem;
+    color: #6c757d;
+  }
 
-.card-body {
-  padding: 2rem;
-}
 
-/* Seção do Contra-Cheque */
+/* Títulos da Seção */
 .profile-section-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -42,51 +40,58 @@ body {
   text-align: center;
 }
 
-iframe {
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease-in-out;
+/* Container Responsivo para PDF */
+.pdf-container {
+  position: relative;
   width: 100%;
-  height: 80vh; /* Altura ajustada para ocupar mais da tela */
+  overflow: auto;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Adiciona espaço ao redor do canvas */
 }
 
-  iframe:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  .pdf-container canvas {
+    display: block; /* Remove o espaço extra abaixo do canvas */
+    max-width: 100%; /* Garante que o canvas não ultrapasse a largura do container */
+    height: auto; /* Ajusta a altura do canvas proporcionalmente */
   }
 
-/* Botão de Download */
+/* Botões */
 .btn {
-  padding: 10px 20px;
-  font-size: 1.2rem;
+  padding: 12px 24px;
+  font-size: 1.1rem;
   font-weight: 500;
-  border-radius: 50px;
+  border-radius: 25px;
   transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-success {
   background-color: #28a745;
   border: none;
-  color: #fff;
+  color: #ffffff;
 }
 
   .btn-success:hover {
     background-color: #218838;
-    transform: scale(1.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
-/* Alerta de ausência de contra-cheque */
+/* Alertas */
 .alert {
   font-size: 1.2rem;
   font-weight: 500;
-  border-radius: 10px;
+  border-radius: 8px;
+  margin-top: 20px;
 }
 
 .alert-warning {
   background-color: #fff3cd;
   color: #856404;
   border: 1px solid #ffeeba;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Ícones */
@@ -94,27 +99,22 @@ iframe {
   margin-right: 10px;
 }
 
+/* Text Alignment */
 .text-center {
   text-align: center;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .card-body {
-    padding: 1.5rem;
+  .profile-header h2 {
+    font-size: 2rem;
   }
 
-  .profile-section-title {
-    font-size: 1.3rem;
+  .profile-header p {
+    font-size: 1rem;
   }
 
   .btn {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
-  }
-
-  iframe {
-    height: 60vh; /* Ajuste para dispositivos móveis */
+    font-size: 1rem;
   }
 }
