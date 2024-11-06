@@ -1,6 +1,9 @@
 using AspnetCoreMvcFull.Utils;
 using AspnetCoreMvcFull.Utils.Email;
+using AspnetCoreMvcFull.Utils.Funcionarios;
+using AspnetCoreMvcFull.Utils.Messagem;
 using AspnetCoreMvcFull.Utils.PDF;
+using AspnetCoreMvcFull.Utils.Token;
 using Microsoft.AspNetCore.SignalR;
 using Serilog;
 
@@ -22,10 +25,13 @@ builder.Services.AddScoped<IValidateSession, ValidateSession>();
 builder.Services.AddScoped<IFileEncryptor, FileEncryptor>();
 builder.Services.AddScoped<IRelatorioService, RelatorioService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IGenerateToken, GenerateToken>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IFuncionarioService, FuncionarioService>();
 builder.Services.AddScoped<HttpClient>();
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddHttpClient();
 builder.Services.AddSession(options =>
 {
   options.IdleTimeout = TimeSpan.FromHours(2); 

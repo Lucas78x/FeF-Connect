@@ -1,0 +1,68 @@
+.custom-card {
+  max-width: 800px;
+  margin: 25px auto;
+}
+
+.action-icons {
+  display: flex;
+  justify-content: flex-end; /* Align to the right */
+}
+
+  .action-icons a {
+    margin-left: 15px; /* Add space between icons */
+  }
+
+/* Botão de adicionar */
+.btn-add {
+  display: inline-block; /* Centraliza junto com o texto */
+}
+
+/* Campo de filtro */
+#searchInput {
+  max-width: 400px; /* Ajusta a largura */
+  margin-bottom: 20px; /* Espaçamento inferior */
+}
+
+
+/* Scrollable container */
+.card-container {
+  max-height: 500px; /* Adjust height as needed */
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .custom-card {
+    max-width: 100%;
+    margin: 15px auto;
+  }
+
+  .btn-add {
+    width: 100%;
+    margin: 0 auto 15px auto;
+    text-align: center;
+  }
+
+  #searchInput {
+    display: block;
+    max-width: 100%;
+    margin: 0 auto 15px auto;
+  }
+
+  .card-container {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-card {
+    padding: 10px;
+  }
+
+  .action-icons a {
+    margin-left: 10px;
+  }
+
+  h2.section-title {
+    font-size: 1.5rem;
+  }
+}

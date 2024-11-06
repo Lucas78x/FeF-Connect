@@ -1,0 +1,292 @@
+@using AspnetCoreMvcFull.Models
+@model PartialModel;
+
+@{
+    ViewData["Title"] = "Relatórios de Comprovantes";
+    var folders = Model.Folders;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/vendor/css//relatorios.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Relatórios</h1>
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#addFolderModal">Adicionar Pasta</button>
+        </div>
+
+        <div class="row">
+            @foreach (var folder in folders)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="folder p-3">
+                        <div class="folder-icon">
+                            <i class="bi bi-folder"></i>
+                        </div>
+                        <div class="folder-name">
+                            <h5>@folder.Name</h5>
+                        </div>
+                        <div class="file-list">
+                            @if (folder.Files.Any())
+                            {
+                                <ul class="list-unstyled">
+                                    @foreach (var file in folder.Files)
+
+                                    {
+
+
+                                        var fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+
+                                        <li class="file-item">
+                                            <i class="bi bi-file-earmark"></i>
+                                            <a href="javascript:void(0)" class="view-file" data-file-url="@Url.Content(file)" data-file-name="@fileName">@fileName</a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p>Nenhum arquivo encontrado.</p>
+                            }
+                        </div>
+                        <button class="btn btn-secondary mt-2" data-toggle="modal" data-target="#addFileModal" data-folder="@folder.Name">Adicionar Arquivo</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Pasta -->
+    <div class="modal fade" id="addFolderModal" tabindex="-1" role="dialog" aria-labelledby="addFolderModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addFolderModalLabel">Adicionar Nova Pasta</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form asp-action="AddFolder" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="folderName">Nome da Pasta</label>
+                            <input type="text" class="form-control" id="folderName" name="folderName" required />
+                        </div>
+                        <div class="error-message">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Arquivo -->
+    <div class="modal fade" id="addFileModal" tabindex="-1" role="dialog" aria-labelledby="addFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addFileModalLabel">Adicionar Novo Arquivo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form asp-action="AddFile" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="fileUpload">Escolher Arquivo</label>
+                            <input type="file" class="form-control-file" id="fileUpload" name="fileUpload" required />
+                        </div>
+                        <input type="hidden" id="folderName" name="folderName" />
+                        <div class="form-group">
+                            <label for="fileName">Nome do Arquivo</label>
+                            <input type="text" class="form-control" id="fileName" name="fileName" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Visualizar Arquivo -->
+    <div class="modal fade" id="viewFileModal" tabindex="-1" role="dialog" aria-labelledby="viewFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewFileModalLabel">Visualizar Arquivo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="fileIframe" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <a id="downloadFileLink" class="btn btn-primary" download>Baixar Arquivo</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Ao exibir o modal para adicionar uma nova pasta
+        $('#addFolderModal').on('show.bs.modal', function (event) {
+            var modal = $(this);
+            // Limpa o campo de entrada do nome da pasta
+            modal.find('.modal-body #folderName').val('');
+        });
+
+        $(document).ready(function () {
+            // Quando o formulário de adicionar pasta for enviado
+            $('#addFolderModal form').on('submit', function (event) {
+                event.preventDefault(); // Evita o envio do formulário padrão
+
+                var folderName = $('#folderName').val();
+
+                // Verifica se o nome da pasta foi preenchido
+                if (folderName === "") {
+                    alert('Por favor, insira o nome da pasta.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("AddFolder", "Financeiro")', // Ajuste para o endpoint de adicionar pasta
+                    type: 'POST',
+                    data: { folderName: folderName }, // Envia apenas o nome da pasta
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(); // Recarrega a página para atualizar a lista de pastas
+                        } else {
+                            alert('Erro ao adicionar a pasta.');
+                        }
+                    },
+                    error: function () {
+                        alert('Falha ao adicionar a pasta.');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        // Ao exibir o modal para adicionar um novo arquivo
+        $('#addFileModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Botão que acionou o modal
+            var folderName = button.data('folder'); // Extrai a info do data-folder
+            var modal = $(this);
+            modal.find('.modal-body #folderName').val(folderName); // Define a pasta onde o arquivo será adicionado
+        });
+
+        $(document).ready(function () {
+            // Quando o formulário de adicionar arquivo for enviado
+            $('#addFileModal form').on('submit', function (event) {
+                event.preventDefault(); // Evita o envio do formulário padrão
+
+                var formData = new FormData(this);
+                var folderName = $('#folderName').val();
+                formData.append('folderName', folderName); // Adiciona o nome da pasta ao FormData
+
+                $.ajax({
+                    url: '@Url.Action("AddFile", "Financeiro")', // Ajuste para o endpoint de adicionar arquivo
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(); // Recarrega a página para atualizar a lista de arquivos
+                        } else {
+                            alert('Erro ao adicionar o arquivo.');
+                        }
+                    },
+                    error: function () {
+                        alert('Falha ao adicionar o arquivo.');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Configuração do modal para adicionar arquivo
+            $('#addFileModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var folderName = button.data('folder');
+                var modal = $(this);
+                modal.find('.modal-body #folderName').val(folderName);
+            });
+
+            // Evento para enviar o formulário de adicionar arquivo
+            $('#addFileModal form').on('submit', function (event) {
+                event.preventDefault(); // Previne o envio do formulário padrão
+
+                var formData = new FormData(this);
+                var folderName = $('#folderName').val();
+                formData.append('folderName', folderName);
+
+                $.ajax({
+                    url: '@Url.Action("AddFile", "Relatorios")',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(); // Recarrega a página para atualizar a lista de arquivos
+                        } else {
+                            alert('Erro ao adicionar o arquivo.');
+                        }
+                    },
+                    error: function () {
+                        alert('Falha ao adicionar o arquivo.');
+                    }
+                });
+            });
+
+            // Configuração do modal para visualizar arquivo
+            $('.view-file').on('click', function () {
+                var fileUrl = $(this).data('file-url');
+                var fileName = $(this).data('file-name');
+
+                $('#fileIframe').attr('src', fileUrl);
+                $('#downloadFileLink').attr('href', fileUrl).attr('download', fileName);
+                $('#viewFileModal').modal('show');
+
+                // Ajuste da altura do iframe
+                var fileType = fileName.split('.').pop().toLowerCase();
+                var iframeHeight;
+
+                if (fileType === 'pdf') {
+                    iframeHeight = '600px';
+                } else if (fileType === 'jpg' || fileType === 'jpeg' || fileType === 'png') {
+                    iframeHeight = '500px';
+                } else {
+                    iframeHeight = '400px';
+                }
+
+                $('#fileIframe').css('height', iframeHeight);
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -19,20 +19,6 @@ h1 {
   margin-bottom: 20px;
 }
 
-/* Form Styles */
-form {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.form-label {
-  font-weight: 500; /* Peso da fonte mais leve */
-  color: #495057;
-  font-size: 1rem; /* Tamanho da fonte mais legível */
-}
-
 /* Button Styles */
 .btn-filtre {
   background-color: #6c757d;

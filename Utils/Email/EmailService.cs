@@ -1,4 +1,5 @@
 using AspnetCoreMvcFull.Enums;
+using AspnetCoreMvcFull.Models;
 using System.Net;
 using System.Net.Mail;
 
@@ -7,12 +8,12 @@ namespace AspnetCoreMvcFull.Utils.Email
   public class EmailService : IEmailService
   {
 
-    public void EnviarEmail(string requisitanteNome, string requisicao, string requisitanteEmail, string relato, TipoStatusEnum status)
+    public void EnviarEmail(string requisitanteNome, string requisicao, string requisitanteEmail, string relato, TipoStatusEnum status, byte[] pdfBytes)
     {
-      string smtpServer = "mail.ff.tv.br";//Environment.GetEnvironmentVariable("SMTP_Server");
+      string smtpServer = "mail.ff.tv.br"; // Environment.GetEnvironmentVariable("SMTP_Server");
       int smtpPort = 587;
-      string senderEmail = "lpr.pdl@ffcomunicacoes.net.br";//Environment.GetEnvironmentVariable("EMAIL_USER");
-      string senderPassword = "Pdl22172510!@";//Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+      string senderEmail = "lucasbastos@grupoff.net.br"; // Environment.GetEnvironmentVariable("EMAIL_USER");
+      string senderPassword = "Aaa!@123#*"; // Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
 
       string subject = GerarAssuntoEmail(status, relato);
       string body = GerarCorpoEmail(status, requisitanteNome, requisicao);
@@ -26,6 +27,16 @@ namespace AspnetCoreMvcFull.Utils.Email
         };
 
         MailMessage mailMessage = new MailMessage(senderEmail, requisitanteEmail, subject, body);
+
+        if (pdfBytes != null && pdfBytes.Length > 0)
+        {
+
+          MemoryStream pdfStream = new MemoryStream(pdfBytes);
+          Attachment pdfAttachment = new Attachment(pdfStream, "Requisicao.pdf", "application/pdf");
+          mailMessage.Attachments.Add(pdfAttachment);
+        }
+      
+
         smtpClient.Send(mailMessage);
         Console.WriteLine("E-mail enviado com sucesso!");
       }
@@ -33,6 +44,61 @@ namespace AspnetCoreMvcFull.Utils.Email
       {
         Console.WriteLine("Erro ao enviar e-mail: " + ex.Message);
       }
+    }
+    public void EnviarEmailFeriasProgramadas( FeriasModel ferias, string funcionarioEmail, byte[] pdfBytes)
+    {
+      string smtpServer = "mail.ff.tv.br"; // Environment.GetEnvironmentVariable("SMTP_Server");
+      int smtpPort = 587;
+      string senderEmail = "lucasbastos@grupoff.net.br"; // Environment.GetEnvironmentVariable("EMAIL_USER");
+      string senderPassword = "Aaa!@123#*"; // Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+
+      string subject = GerarAssuntoEmailFerias( ferias);
+      string body = GerarCorpoEmailFerias(ferias);
+
+      try
+      {
+        SmtpClient smtpClient = new SmtpClient(smtpServer, smtpPort)
+        {
+          Credentials = new NetworkCredential(senderEmail, senderPassword),
+          EnableSsl = true
+        };
+
+        MailMessage mailMessage = new MailMessage(senderEmail, funcionarioEmail, subject, body);
+
+        if (pdfBytes != null && pdfBytes.Length > 0)
+        {
+
+          MemoryStream pdfStream = new MemoryStream(pdfBytes);
+          Attachment pdfAttachment = new Attachment(pdfStream, "Ferias.pdf", "application/pdf");
+          mailMessage.Attachments.Add(pdfAttachment);
+        }
+
+        smtpClient.Send(mailMessage);
+        Console.WriteLine("E-mail enviado com sucesso!");
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine("Erro ao enviar e-mail: " + ex.Message);
+      }
+    }
+
+    private string GerarAssuntoEmailFerias( FeriasModel ferias)
+    {
+      return $"Programação de Férias - {ferias.NomeFuncionario} ({ferias.DataInicio.ToString("dd/MM/yyyy")} a {ferias.DataFim.ToString("dd/MM/yyyy")})";
+    }
+
+    private string GerarCorpoEmailFerias( FeriasModel ferias)
+    {
+      return $"Prezado(a) {ferias.NomeFuncionario},\n\n" +
+            $"Gostaríamos de informar a programação das suas férias:\n\n" +
+            $"Detalhes da Programação de Férias:\n" +
+            $"Nome: {ferias.NomeFuncionario}\n" +
+            $"Data de Início: {ferias.DataInicio.ToString("dd/MM/yyyy")}\n" +
+            $"Data de Fim: {ferias.DataFim.ToString("dd/MM/yyyy")}\n" +
+            $"Observações: {ferias.Observacoes}\n\n" +
+            "Se você tiver alguma dúvida ou precisar de mais informações, não hesite em nos contatar.\n\n" +
+            "Atenciosamente,\n" +
+            "Grupo F&F";
     }
 
     private string GerarAssuntoEmail(TipoStatusEnum status, string relato)

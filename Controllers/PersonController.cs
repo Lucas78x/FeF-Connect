@@ -45,13 +45,13 @@ namespace AspnetCoreMvcFull.Controllers
             else
             {
 
-              return RedirectToPage("MiscError", "Pages");
+              return RedirectToAction("MiscError", "MiscError");
             }
           }
         }
         catch
         {
-          return View("MiscError", "Pages");
+          return View("MiscError", "MiscError");
 
         }
       }

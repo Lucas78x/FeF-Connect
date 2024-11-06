@@ -1,0 +1,224 @@
+@using AspnetCoreMvcFull.Enums
+@using AspnetCoreMvcFull.Models
+@model PartialModel
+@{
+    ViewData["Title"] = "F&F - Connect";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/vendor/css//inicio.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Portal Grupo F&F</h1>
+        @{
+            var nome = $"{Model.funcionario.Nome + " " + Model.funcionario.Sobrenome}";
+            <div class="welcome">Bem-vindo, @nome!</div>
+
+            if (Model.AdminUser(Model.funcionario.Permissao))
+            {
+                <div class="text-right mb-3">
+                    <button class="btn btn-primary" data-toggle="modal" data-target="#addEventoModal">Adicionar Evento</button>
+                    <button class="btn btn-secondary" data-toggle="modal" data-target="#addComunicadoModal">Adicionar Comunicado</button>
+
+                </div>
+            }
+        }
+        <div class="grid">
+            <div class="card">
+                <h2>Comunicados</h2>
+                @foreach (var comunicado in Model.Comunicados)
+                {
+                    <div class="comunicado">
+                        <h3>@comunicado.Titulo</h3>
+                        <p>@comunicado.Mensagem</p>
+                        <p>📅 @comunicado.DataPublicacao.ToString("dd/MM HH:mm")</p>
+                    </div>
+                }
+                <i class="fas fa-bullhorn icon"></i>
+            </div>
+
+            <div class="card">
+                <h2>Dicas</h2>
+                <p>@Model.Dica.Texto</p>
+                <i class="fas fa-lightbulb icon"></i>
+            </div>
+
+            <div class="card">
+                <h2>Aniversariantes</h2>
+                @{
+                    var currentMes = char.ToUpper(DateTime.Now.ToString("MMMM")[0]) + DateTime.Now.ToString("MMMM").Substring(1).ToLower();
+                    <p>🎉 Parabéns para nossos colegas que fazem aniversário em: @currentMes</p>
+                }
+                <ul>
+                    @{
+                        if (Model.Funcionarios.Any())
+                        {
+                            foreach (var funcionario in Model.Funcionarios)
+                            {
+                                var aniverNome = $"{funcionario.Nome + " " + funcionario.Sobrenome}";
+                                var data = $"- {funcionario.DataNascimento.ToString("dd/MM")}";
+                                var aniversariante = $"{aniverNome + data}";
+                                <li>aniversariante</li>
+                            }
+                        }
+                        else
+                        {
+                            <li>Nenhum aniversariante.</li>
+                        }
+                    }
+                </ul>
+                <i class="fas fa-birthday-cake icon"></i>
+            </div>
+
+            <div class="card">
+                <h2>Eventos</h2>
+                <div class="card-content">
+                    @{
+                        if (@Model.Eventos != null)
+                        {
+                            foreach (var evento in Model.Eventos)
+                            {
+                                <div>
+                                    <p>✨ @evento.Descricao</p> <!-- Ícone de informação -->
+                                    <p>📅 @evento.Data.ToString("dd/MM HH:mm")</p> <!-- Ícone de calendário -->
+                                    <p>
+                                        <a href="@evento.Link" target="_blank">📍 @evento.Local</a>
+                                    </p>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>Nenhum Evento.</p> <!-- Ícone de informação -->
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Notícias</h2>
+                <div class="card-content">
+                    @{
+                        foreach (var noticia in Model.Noticias)
+                        {
+                            <p>🌟 @noticia.Title</p>
+                            <p>
+                                <a href="@noticia.Url" target="_blank">📍 Clique aqui.</a>
+                            </p>
+                        }
+                    }
+                </div>
+                <i class="fas fa-trophy icon"></i>
+            </div>
+
+            <div class="card">
+                <h2>Recursos Úteis</h2>
+                <p>🔗 Acesse nossa Biblioteca de Documentos: <a href="#">Clique aqui</a>.</p>
+                <i class="fas fa-book icon"></i>
+            </div>
+
+            <div class="card">
+                <h2>Previsão do Tempo</h2>
+                <div class="weather">
+                    <div>
+                        <h3>Hoje</h3>
+                        <p>🌤️ @Model.Forecast.Temperatura°C</p>
+                    </div>
+                    <div>
+                        <p><i class="fas fa-umbrella"></i> Probabilidade de chuva: @Model.Forecast.Chuva%</p>
+                    </div>
+                </div>
+                <i class="fas fa-sun icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addEventoModal" tabindex="-1" role="dialog" aria-labelledby="addEventoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEventoModalLabel">Adicionar Evento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventoForm">
+                        <div class="form-group">
+                            <label for="eventoDescricao">Descrição do Evento</label>
+                            <input type="text" class="form-control" id="eventoDescricao" name="descricao" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventoData">Data e Hora</label>
+                            <input type="datetime-local" class="form-control" id="eventoData" name="data" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventoLocal">Local</label>
+                            <input type="text" class="form-control" id="eventoLocal" name="local" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="Status" class="form-label">Setor</label>
+                            <select class="form-select" id="Status" name="Status">
+                                @foreach (var setor in EnumExtensions.GetEnumValues<TipoPermissaoEnum>())
+                                {
+                                    <option value="@setor">@setor</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Evento</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addComunicadoModal" tabindex="-1" role="dialog" aria-labelledby="addComunicadoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addComunicadoModalLabel">Adicionar Comunicado</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="comunicadoForm">
+                        <div class="form-group">
+                            <label for="comunicadoTitulo">Título do Comunicado</label>
+                            <input type="text" class="form-control" id="comunicadoTitulo" name="titulo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="comunicadoMensagem">Mensagem</label>
+                            <textarea class="form-control" id="comunicadoMensagem" name="mensagem" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="comunicadoData">Data e Hora</label>
+                            <input type="datetime-local" class="form-control" id="comunicadoData" name="data" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Comunicado</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+<script src="~/js/Inicio/inicio.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

@@ -1,5 +1,6 @@
 using AspnetCoreMvcFull.Enums;
 using AspnetCoreMvcFull.Models;
+using Microsoft.AspNetCore.Hosting;
 using System.Security.Cryptography;
 
 namespace AspnetCoreMvcFull.Utils
@@ -7,6 +8,15 @@ namespace AspnetCoreMvcFull.Utils
 
   public class FileEncryptor : IFileEncryptor
   {
+    private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly IConfiguration _configuration;
+
+    public FileEncryptor(IWebHostEnvironment webHostEnvironment, IConfiguration configuration)
+    {
+      _webHostEnvironment = webHostEnvironment;
+      _configuration = configuration;
+    }
+
     private static byte[] GenerateKey(string password, byte[] salt)
     {
       using (var keyGenerator = new Rfc2898DeriveBytes(password, salt, 10000))
@@ -14,78 +24,108 @@ namespace AspnetCoreMvcFull.Utils
         return keyGenerator.GetBytes(32);
       }
     }
-
-    public void EncryptFile(string filePath, string password)
+    public string GetRootPath()
     {
-      byte[] salt = new byte[16];
+      return _webHostEnvironment.WebRootPath;
+    }
+
+    public string GetSecretKey()
+    {
+      return _configuration["Authentication:Secret"];
+    }
+
+    public void EncryptFile(string folderPath, string password)
+    {
+
+      byte[] salt = new byte[8];
       using (var rng = new RNGCryptoServiceProvider())
       {
         rng.GetBytes(salt);
       }
 
-      byte[] key = GenerateKey(password, salt);
-
-      using (var aes = Aes.Create())
+      using (var aes = new AesManaged())
       {
+        aes.KeySize = 256;
+        aes.BlockSize = 128;
+        var key = new Rfc2898DeriveBytes(password, salt, 1000).GetBytes(32);
         aes.Key = key;
-        aes.GenerateIV();
+        aes.IV = new byte[16];
+        aes.Padding = PaddingMode.PKCS7;
+        aes.Mode = CipherMode.CBC;
 
-        using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate))
+        foreach (string filePath in Directory.GetFiles(folderPath))
         {
-          fileStream.Write(salt, 0, salt.Length);
-          fileStream.Write(aes.IV, 0, aes.IV.Length);
+          string encryptedFilePath = filePath + ".enc"; // Create a new file with .enc extension
 
-          using (var cryptoStream = new CryptoStream(fileStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
-          using (var inputFileStream = new FileStream(filePath, FileMode.Open))
+          using (var fsIn = new FileStream(filePath, FileMode.Open, FileAccess.Read))
           {
-            inputFileStream.CopyTo(cryptoStream);
+            using (var fsOut = new FileStream(encryptedFilePath, FileMode.Create, FileAccess.Write))
+            {
+              fsOut.Write(salt, 0, salt.Length);
+
+              using (var cryptoStream = new CryptoStream(fsOut, aes.CreateEncryptor(), CryptoStreamMode.Write))
+              {
+                fsIn.CopyTo(cryptoStream);
+              }
+            }
           }
+
+          File.Delete(filePath);
         }
       }
     }
 
-    public void DecryptFile(string filePath, string password)
+    public void DecryptFile(string folderPath, string password)
     {
-      using (var fileStream = new FileStream(filePath, FileMode.Open))
+      foreach (string filePath in Directory.GetFiles(folderPath, "*.enc"))
       {
-        byte[] salt = new byte[16];
-        fileStream.Read(salt, 0, salt.Length);
+        string decryptedFilePath = filePath.Substring(0, filePath.Length - 4); // Remove .enc extension
 
-        byte[] key = GenerateKey(password, salt);
-
-        using (var aes = Aes.Create())
+        using (var fsIn = new FileStream(filePath, FileMode.Open, FileAccess.Read))
         {
-          byte[] iv = new byte[aes.IV.Length];
-          fileStream.Read(iv, 0, iv.Length);
+          byte[] salt = new byte[8];
+          fsIn.Read(salt, 0, salt.Length);
 
-          aes.Key = key;
-          aes.IV = iv;
-
-          using (var cryptoStream = new CryptoStream(fileStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
-          using (var outputFileStream = new FileStream(filePath + ".decrypted", FileMode.Create))
+          using (var aes = new AesManaged())
           {
-            cryptoStream.CopyTo(outputFileStream);
+            aes.KeySize = 256;
+            aes.BlockSize = 128;
+            var key = new Rfc2898DeriveBytes(password, salt, 1000).GetBytes(32);
+            aes.Key = key;
+            aes.IV = new byte[16];
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Mode = CipherMode.CBC;
+
+            using (var fsOut = new FileStream(decryptedFilePath, FileMode.Create, FileAccess.Write))
+            {
+              using (var cryptoStream = new CryptoStream(fsIn, aes.CreateDecryptor(), CryptoStreamMode.Read))
+              {
+                cryptoStream.CopyTo(fsOut);
+              }
+            }
           }
         }
+
+        File.Delete(filePath);
       }
     }
 
-    public string UserIconUrl(string patch,string oldPatch, string password, int Id, TipoGeneroEnum Genero)
+    public string UserIconUrl(string patch, string oldPatch, string password, int Id, TipoGeneroEnum Genero)
     {
       string userDirectory = Path.Combine(patch, Id.ToString());
 
       if (!Directory.Exists(patch))
       {
-        
+
         Directory.CreateDirectory(patch);
-       // EncryptFile(patch, password);
+        //EncryptFile(patch, password);
       }
 
       if (!Directory.Exists(userDirectory))
       {
         //DecryptFile(patch, password);
         Directory.CreateDirectory(userDirectory);
-        //EncryptFile(patch, password);
+       
 
         switch (Genero)
         {
@@ -100,7 +140,6 @@ namespace AspnetCoreMvcFull.Utils
         }
       }
 
-      //DecryptFile(patch, password);
 
       var latestFile = new DirectoryInfo(userDirectory).GetFiles()
                         .Where(f => f.Extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
@@ -150,7 +189,7 @@ namespace AspnetCoreMvcFull.Utils
 
       foreach (var file in payslipFiles)
       {
-    
+
         string relativePath = file.FullName.Replace(oldPatch, "~").Replace("\\", "/");
 
         payslips.Add(new PayslipModel
@@ -195,15 +234,14 @@ namespace AspnetCoreMvcFull.Utils
         };
       }
 
-      return null; 
+      return null;
     }
 
-   
     private void EnsureDirectoryExists(string path, string password = null)
     {
       if (!Directory.Exists(path))
       {
-        Directory.CreateDirectory(path);      
+        Directory.CreateDirectory(path);
       }
     }
 

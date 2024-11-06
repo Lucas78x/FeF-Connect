@@ -1,0 +1,123 @@
+body {
+  background-color: #f8f9fa; /* Cor de fundo suave */
+}
+
+h1 {
+  margin-bottom: 30px; /* Espaçamento abaixo do título */
+  color: #343a40; /* Cor do título */
+}
+
+.folder {
+  background-color: #ffffff; /* Fundo branco para a pasta */
+  border: 1px solid #ced4da; /* Borda suave */
+  border-radius: 5px; /* Bordas arredondadas */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra leve */
+  transition: transform 0.2s; /* Transição suave ao passar o mouse */
+}
+
+  .folder:hover {
+    transform: scale(1.02); /* Efeito de aumento ao passar o mouse */
+  }
+
+.folder-icon {
+  font-size: 24px; /* Tamanho do ícone da pasta */
+}
+
+.folder-name h5 {
+  font-size: 18px; /* Tamanho do texto do nome da pasta */
+  margin: 10px 0; /* Margem superior e inferior */
+  color: #007bff; /* Cor do nome da pasta */
+}
+
+.file-item {
+  padding: 10px 0; /* Espaçamento vertical entre arquivos */
+  border-bottom: 1px solid #dee2e6; /* Linha separadora */
+}
+
+  .file-item:last-child {
+    border-bottom: none; /* Remove a linha do último item */
+  }
+
+.error-message {
+  color: #dc3545; /* Cor da mensagem de erro */
+  font-weight: bold; /* Negrito */
+}
+
+.btn-link {
+  font-size: 16px; /* Tamanho do botão de link */
+}
+
+.btn-primary {
+  background-color: #007bff; /* Cor do botão primário */
+  border-color: #007bff; /* Borda do botão primário */
+}
+
+.btn-secondary {
+  background-color: #6c757d; /* Cor do botão secundário */
+  border-color: #6c757d; /* Borda do botão secundário */
+}
+
+.modal-header {
+  background-color: #f1f1f1; /* Cor de fundo do cabeçalho do modal */
+}
+
+.modal-title {
+  font-size: 20px; /* Tamanho do título do modal */
+}
+
+.modal-footer .btn {
+  margin-left: 10px; /* Espaçamento entre os botões no rodapé do modal */
+}
+
+.list-unstyled {
+  padding-left: 0; /* Remove o espaçamento à esquerda */
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 24px; /* Reduz o tamanho do título em telas pequenas */
+  }
+
+  .folder {
+    margin-bottom: 15px; /* Espaçamento entre as pastas */
+  }
+
+  .folder-name h5 {
+    font-size: 16px; /* Reduz o tamanho do texto do nome da pasta */
+  }
+
+  .file-item {
+    padding: 8px 0; /* Reduz o espaçamento vertical entre arquivos */
+  }
+
+  .btn-link, .btn-primary, .btn-secondary {
+    font-size: 14px; /* Reduz o tamanho do texto dos botões */
+  }
+
+  .modal-title {
+    font-size: 18px; /* Reduz o tamanho do título do modal */
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 20px; /* Reduz ainda mais o tamanho do título */
+  }
+
+  .folder-icon {
+    font-size: 20px; /* Reduz o tamanho do ícone da pasta */
+  }
+
+  .folder-name h5 {
+    font-size: 14px; /* Reduz o tamanho do texto do nome da pasta */
+  }
+
+  .file-item {
+    padding: 6px 0; /* Reduz ainda mais o espaçamento vertical entre arquivos */
+  }
+
+  .modal-footer .btn {
+    margin-left: 5px; /* Reduz o espaçamento entre os botões no rodapé do modal */
+  }
+}

@@ -1,0 +1,143 @@
+
+
+/* Estilo da barra de rolagem */
+::-webkit-scrollbar {
+  width: 8px; /* Largura da barra de rolagem */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Cor do fundo da barra de rolagem */
+  border-radius: 10px; /* Bordas arredondadas para o trilho */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #007bff; /* Cor da parte que é arrastada */
+  border-radius: 10px; /* Bordas arredondadas para a parte arrastada */
+}
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #0056b3; /* Cor ao passar o mouse */
+  }
+
+.container {
+  max-width: 800px; /* Largura máxima do contêiner */
+  margin: auto; /* Centraliza o contêiner */
+  padding: 40px; /* Espaçamento interno aumentado */
+  background-color: white; /* Fundo branco para o contêiner */
+  border-radius: 8px; /* Bordas arredondadas */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra suave para profundidade */
+}
+
+h2 {
+  color: #343a40; /* Cor mais escura para o cabeçalho */
+  margin-bottom: 25px; /* Espaçamento abaixo do cabeçalho */
+  text-align: center; /* Centraliza o cabeçalho */
+  font-size: 24px; /* Tamanho da fonte aumentado para o cabeçalho */
+}
+
+.btn-add {
+  display: block; /* Faz o botão um elemento em bloco */
+  margin: 0 auto 25px; /* Centraliza o botão com margem automática */
+  width: 220px; /* Largura fixa para consistência */
+}
+
+#searchInput {
+  width: auto; /* Largura automática para a barra de pesquisa */
+  display: inline-block; /* Exibição em linha */
+}
+
+.atestados-list {
+  max-height: 400px; /* Altura máxima para a lista */
+  overflow-y: auto; /* Habilita rolagem vertical */
+  margin-top: 20px; /* Espaço acima da lista */
+  border: 1px solid #e0e0e0; /* Borda leve ao redor da lista */
+  border-radius: 8px; /* Bordas arredondadas para a lista */
+  background-color: #fff; /* Fundo branco para a lista */
+  padding: 10px; /* Espaçamento interno */
+}
+
+.atestado-card {
+  margin-bottom: 20px; /* Espaço entre os cards */
+  border-radius: 8px; /* Bordas arredondadas para os cards */
+  transition: transform 0.2s; /* Efeito suave de escala */
+  background-color: #ffffff; /* Fundo branco para os cards */
+  border: 1px solid #e0e0e0; /* Borda leve para os cards */
+}
+
+  .atestado-card:hover {
+    transform: scale(1.02); /* Aumenta levemente ao passar o mouse */
+  }
+
+.card-header {
+  background-color: #007bff; /* Cor primária para o cabeçalho */
+  color: white; /* Texto branco para contraste */
+  font-weight: bold; /* Texto do cabeçalho em negrito */
+}
+
+.card-body {
+  padding: 15px; /* Espaçamento interno do corpo do card */
+}
+
+.form-label {
+  font-weight: bold; /* Rótulos em negrito para melhor visibilidade */
+}
+
+.form-select {
+  width: auto; /* Largura automática para os elementos select */
+  display: inline-block; /* Exibição em linha */
+  margin-left: 10px; /* Espaço entre o select e o rótulo */
+}
+
+.mb-3 {
+  margin-bottom: 1rem; /* Margem inferior para elementos com a classe .mb-3 */
+}
+
+.modal-header {
+  background-color: #f1f1f1; /* Fundo claro para o cabeçalho do modal */
+  border-bottom: 1px solid #dee2e6; /* Borda inferior suave */
+}
+
+.modal-body {
+  padding: 20px; /* Espaçamento interno do corpo do modal */
+}
+
+.btn-secondary {
+  background-color: #6c757d; /* Cor secundária para botões */
+  border: none; /* Remove borda padrão */
+}
+
+.btn-primary {
+  background-color: #007bff; /* Cor primária para botões */
+  border: none; /* Remove borda padrão */
+}
+
+.btn-close {
+  color: #000; /* Cor do botão de fechar */
+}
+
+.text-muted {
+  color: #6c757d; /* Cor para texto desativado */
+}
+
+iframe {
+  border: none; /* Remove borda do iframe */
+  border-radius: 8px; /* Bordas arredondadas para o iframe */
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 20px; /* Menos padding em telas pequenas */
+  }
+
+  h2 {
+    font-size: 20px; /* Reduz o tamanho da fonte do cabeçalho em telas pequenas */
+  }
+
+  .btn-add {
+    width: 100%; /* Botão ocupa a largura total em telas pequenas */
+  }
+
+  #searchInput {
+    width: 100%; /* Barra de pesquisa ocupa a largura total em telas pequenas */
+  }
+}

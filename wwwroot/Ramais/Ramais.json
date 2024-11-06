@@ -1,0 +1,69 @@
+{
+  "Ramais": [
+    {
+      "Nome": "Ednea Brandão",
+      "Ramal": 2001,
+      "Setor": "Financeiro"
+    },
+    {
+      "Nome": "Lucas Santana",
+      "Ramal": 2003,
+      "Setor": "Analise"
+    },
+    {
+      "Nome": "Gretsiane Santana",
+      "Ramal": 2004,
+      "Setor": "Comercial"
+    },
+    {
+      "Nome": "Estela Sales",
+      "Ramal": 2006,
+      "Setor": "Torre de Controle"
+    },
+    {
+      "Nome": "Arieli Cristovão",
+      "Ramal": 2012,
+      "Setor": "Torre de Controle"
+    },
+    {
+      "Nome": "Leonildo Argolo",
+      "Ramal": 2008,
+      "Setor": "Gerente Operacional"
+    },
+    {
+      "Nome": "Jailane Santos",
+      "Ramal": 2010,
+      "Setor": "Suporte"
+    },
+    {
+      "Nome": "Taina Oliveira",
+      "Ramal": 2011,
+      "Setor": "Administrativo"
+    },
+    {
+      "Nome": "Brendo",
+      "Ramal": 2018,
+      "Setor": "CFTV"
+    },
+    {
+      "Nome": "Wallef Igor",
+      "Ramal": 2013,
+      "Setor": "Analise"
+    },
+    {
+      "Nome": "Leonardo Alves",
+      "Ramal": 2005,
+      "Setor": "Desenvolvimento"
+    },
+    {
+      "Nome": "Juniara Patriota",
+      "Ramal": 2007,
+      "Setor": "Suporte"
+    },
+    {
+      "Nome": "Tailane Silva",
+      "Ramal": 2009,
+      "Setor": "Analise"
+    }
+  ]
+}

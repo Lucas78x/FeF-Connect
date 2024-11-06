@@ -1,0 +1,185 @@
+@using AspnetCoreMvcFull.Models
+@model PartialModel
+
+@{
+    ViewData["Title"] = "Atestados";
+    var sobrenome = $"  {Model.funcionario.Sobrenome}";
+    string Nome = $"{Model.funcionario.Nome}{sobrenome} ";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/vendor/css/atestado.css">
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<div class="container mt-5">
+    <h2 class="text-center">Lista de Atestados</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button type="button" class="btn btn-primary btn-add" data-bs-toggle="modal" data-bs-target="#adicionarModal">
+            Adicionar Atestado
+        </button>
+
+        <div>
+            <input type="text" id="searchInput" placeholder="Pesquisar..." class="form-control" style="width: 250px;" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="filterDate" class="form-label">Filtrar por Data:</label>
+        <select id="filterDate" class="form-select" onchange="filterByDate()">
+            <option value="">Todas as datas</option>
+            @foreach (var atestado in Model.Atestados)
+            {
+                <option value="@atestado.DataAtestado.ToString("yyyy-MM-dd")">@atestado.DataAtestado.ToShortDateString()</option>
+            }
+        </select>
+    </div>
+
+    <div class="atestados-list" id="atestadosList">
+        @foreach (var atestado in Model.Atestados)
+        {
+            <div class="card atestado-card" data-date="@atestado.DataAtestado.ToString("yyyy-MM-dd")">
+                <div class="card-header">
+                    @Nome
+                </div>
+                <div class="card-body">
+                    <p><strong>Data:</strong> @atestado.DataAtestado.ToShortDateString()</p>
+                    <p><strong>Motivo:</strong> @atestado.Motivo</p>
+                    <p>
+                        <strong>Anexo:</strong>
+                        @if (!string.IsNullOrEmpty(atestado.UrlAnexo))
+                        {
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-4 me-2"></i>
+                                <a href="@atestado.UrlAnexo" target="_blank" class="btn btn-sm btn-primary">
+                                    Baixar
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Sem anexo</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="adicionarModal" tabindex="-1" aria-labelledby="adicionarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adicionarModalLabel">Adicionar Atestado</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="adicionarForm" enctype="multipart/form-data">
+                    <div class="form-group mt-3">
+                        <label>Data do Atestado</label>
+                        <input id="dataAtestado" name="DataAtestado" type="date" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Motivo</label>
+                        <input id="motivo" name="Motivo" class="form-control" required />
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>Anexo (PDF ou Imagem)</label>
+                        <input id="anexo" name="Anexo" type="file" class="form-control" accept=".pdf, .jpg, .jpeg, .png" required />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="submitForm()">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                let filter = this.value.toLowerCase();
+                let cards = document.querySelectorAll('.atestado-card');
+
+                cards.forEach(card => {
+                    let name = card.querySelector('.card-header')?.innerText.toLowerCase() || '';
+                    let date = card.querySelector('.card-body p:first-child')?.innerText.toLowerCase() || '';
+                    let reason = card.querySelector('.card-body p:nth-child(2)')?.innerText.toLowerCase() || '';
+
+                    if (name.includes(filter) || date.includes(filter) || reason.includes(filter)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        document.getElementById('filterDate')?.addEventListener('change', filterByDate);
+
+        function filterByDate() {
+            let selectedDate = document.getElementById('filterDate').value;
+            let cards = document.querySelectorAll('.atestado-card');
+
+            cards.forEach(card => {
+                let cardDate = card.getAttribute('data-date');
+                if (selectedDate === "" || cardDate === selectedDate) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    function hasXSS(value) {
+        const xssPattern = /<|>|&|\"|\'|`|javascript:|onerror|onload/i;
+        return xssPattern.test(value);
+    }
+
+    function submitForm() {
+        const motivo = document.getElementById('motivo').value;
+        const dataAtestado = document.getElementById('dataAtestado').value;
+        const anexo = document.getElementById('anexo').files[0];
+
+
+        if (hasXSS(motivo)) {
+            alert('O campo Motivo contém caracteres inválidos.');
+            return;
+        }
+
+        if (hasXSS(dataAtestado)) {
+            alert('O campo Data do Atestado contém caracteres inválidos.');
+            return;
+        }
+
+        const form = document.getElementById('adicionarForm');
+        const formData = new FormData(form);
+
+        fetch('/Atestado/Adicionar', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Atestado adicionado com sucesso!');
+                    location.reload(); 
+                } else {
+                    alert('Erro ao adicionar o atestado.');
+                }
+            })
+            .catch(error => console.error('Erro:', error));
+    }
+</script>

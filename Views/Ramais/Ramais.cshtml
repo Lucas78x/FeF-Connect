@@ -1,0 +1,42 @@
+@using AspnetCoreMvcFull.Models;
+@model PartialModel
+
+@{
+    ViewData["Title"] = "Ramais";
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="~/vendor/css/ramais.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Ramais Grupo F&F</h1>
+        <div class="setores-container">
+            @foreach (var grupo in Model.Ramais.GroupBy(r => r.Setor).OrderBy(g => g.Key))
+            {
+                <div class="setor">
+                    <h2>@grupo.Key</h2> <!-- Título do setor -->
+                    <div class="ramal-list">
+                        @foreach (var ramal in grupo.OrderBy(r => r.Nome))
+                        {
+                            <div class="ramal">
+                                <i class="fas fa-phone-alt icon"></i>
+                                <div class="info">
+                                    <p><strong>@ramal.Nome</strong></p>
+                                    <p>Ramal: @ramal.Ramal</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>

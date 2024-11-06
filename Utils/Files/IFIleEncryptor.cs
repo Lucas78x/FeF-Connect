@@ -7,6 +7,8 @@ namespace AspnetCoreMvcFull.Utils
   {
     void EncryptFile(string filePath, string password);
     void DecryptFile(string filePath, string password);
+    string GetRootPath();
+    string GetSecretKey();
     string UserIconUrl(string patch, string oldPatch, string password, int Id, TipoGeneroEnum Genero);
     List<PayslipModel> UserCheque(string patch, string oldPatch, string password, int id);
     string UserEscala(string patch, string oldPatch, string password);

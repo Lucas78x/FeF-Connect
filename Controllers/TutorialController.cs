@@ -31,7 +31,7 @@ namespace AspnetCoreMvcFull.Controllers
       var id = HttpContext.Session.GetInt32("Id") ?? -1;
       if (id == -1)
       {
-        return RedirectToPage("MiscError", "Pages");
+        return RedirectToAction("MiscError", "MiscError");
       }
 
       try
@@ -47,13 +47,13 @@ namespace AspnetCoreMvcFull.Controllers
         var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
         if (!response.IsSuccessStatusCode)
         {
-          return RedirectToPage("MiscError", "Pages");
+          return RedirectToAction("MiscError", "MiscError");
         }
 
         var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
         if (funcionario == null)
         {
-          return RedirectToPage("MiscError", "Pages");
+          return RedirectToAction("MiscError", "MiscError");
         }
 
         _validateSession.SetFuncionarioId(funcionario.Id);
@@ -71,7 +71,7 @@ namespace AspnetCoreMvcFull.Controllers
       }
       catch
       {
-        return View("MiscError", "Pages");
+        return View("MiscError", "MiscError");
       }
     }
 

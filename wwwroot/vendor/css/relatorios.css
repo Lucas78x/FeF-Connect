@@ -1,0 +1,104 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  margin-top: 20px;
+}
+
+.folder {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Distributes space between items */
+  height: auto; /* Allow the height to expand based on content */
+  max-height: 300px; /* Set a maximum height */
+  overflow: hidden; /* Hides overflow content */
+  padding: 10px; /* Add padding for better spacing */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+  .folder:hover {
+    background-color: #f1f1f1;
+  }
+
+.file-list {
+  flex: 1; /* Allows the list to expand */
+  margin-top: 10px;
+  max-height: 150px; /* Adjust as needed */
+  overflow-y: auto; /* Adds vertical scroll */
+}
+
+.file-item {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+  .file-item i {
+    font-size: 1.2rem; /* Slightly larger icon */
+    color: #6c757d;
+    margin-right: 8px;
+  }
+
+  .file-item:hover {
+    text-decoration: underline;
+  }
+
+.error-message {
+  color: red;
+  font-size: 14px;
+}
+
+.modal-content {
+  border-radius: 8px;
+  background-color: #ffffff; /* Cor de fundo do modal */
+  border: 1px solid #007bff; /* Borda azul */
+}
+
+.modal-header {
+  background-color: #007bff; /* Cor do cabeçalho do modal */
+  color: #ffffff; /* Cor do texto */
+  border-top-left-radius: 8px; /* Canto arredondado */
+  border-top-right-radius: 8px; /* Canto arredondado */
+}
+
+.modal-footer .btn {
+  border-radius: 20px; /* Canto arredondado dos botões */
+}
+
+.modal-footer .btn-secondary {
+  background-color: #6c757d; /* Cor de fundo do botão de cancelar */
+  color: #ffffff; /* Cor do texto do botão */
+  border: none; /* Remove bordas */
+}
+
+  .modal-footer .btn-secondary:hover {
+    background-color: #5a6268; /* Cor do botão ao passar o mouse */
+  }
+
+.modal-footer .btn-primary {
+  background-color: #007bff; /* Cor de fundo do botão de adicionar */
+  border: none; /* Remove bordas */
+}
+
+  .modal-footer .btn-primary:hover {
+    background-color: #0056b3; /* Cor do botão ao passar o mouse */
+  }
+
+.delete-folder, .delete-file {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+}
+
+  .delete-folder:hover, .delete-file:hover {
+    color: #dc3545; /* Cor para hover */
+    cursor: pointer;
+  }

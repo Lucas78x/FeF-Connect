@@ -1,4 +1,5 @@
 using AspnetCoreMvcFull.Enums;
+using AspnetCoreMvcFull.Models;
 
 namespace AspnetCoreMvcFull.DTO
 {
@@ -16,6 +17,7 @@ namespace AspnetCoreMvcFull.DTO
     public TipoPermissaoEnum Permissao { get; set; }
 
     public string ImagemUrl;
+
     public FuncionarioModel() { }
 
     public FuncionarioModel(string nome, string sobrenome, string cpf, string rg, TipoGeneroEnum genero, string email, DateTime dataNascimento, string cargo, TipoPermissaoEnum permissao)

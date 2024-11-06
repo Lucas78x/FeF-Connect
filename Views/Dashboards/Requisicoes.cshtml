@@ -126,7 +126,7 @@
                     <div class="mb-3">
                         <label for="AddRequirido" class="form-label">Requirido</label>
                         <select class="form-select" id="AddRequirido" name="Requirido" required>
-                            @foreach (var funcionario in ViewBag.Funcionarios)
+                            @foreach (var funcionario in Model.Funcionarios)
                             {
                                 <option value="@funcionario.Id">@funcionario.Nome</option>
                             }
@@ -409,6 +409,8 @@
 
             // Converte o FormData para um objeto JavaScript
             const data = Object.fromEntries(formData.entries());
+
+            console.log(data);
 
             try {
                 // Envia os dados usando a API Fetch

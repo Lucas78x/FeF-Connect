@@ -5,6 +5,7 @@ using AspnetCoreMvcFull.Utils;
 using Microsoft.AspNetCore.Mvc;
 using AspnetCoreMvcFull.DTO;
 using Microsoft.Extensions.Logging;
+using Ganss.Xss;
 
 namespace AspnetCoreMvcFull.Controllers
 {
@@ -47,7 +48,7 @@ namespace AspnetCoreMvcFull.Controllers
         {
           var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
           if (funcionario == null)
-            return RedirectToPage("MiscError", "Pages");
+            return RedirectToAction("MiscError", "MiscError");
 
           UpdateSessionWithFuncionario(funcionario);
 
@@ -64,7 +65,7 @@ namespace AspnetCoreMvcFull.Controllers
       catch (Exception ex)
       {
         _logger.LogError(ex, "Error fetching funcionario data");
-        return View("MiscError", "Pages");
+        return View("MiscError", "MiscError");
       }
 
       return RedirectToAction("LoginBasic", "Auth");
@@ -120,6 +121,9 @@ namespace AspnetCoreMvcFull.Controllers
     [HttpPost]
     public async Task<IActionResult> Upload(IFormFile file, string title, string fileType)
     {
+      var sanitizer = new HtmlSanitizer();
+      title = sanitizer.Sanitize(title);
+
       if (file == null || file.Length == 0)
         return Json(new { success = false, message = "Nenhum arquivo enviado." });
 

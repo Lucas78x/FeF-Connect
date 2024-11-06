@@ -1,0 +1,25 @@
+@{
+    Layout = "_BlankLayout";
+    ViewData["Title"] = "404 - Page Not Found";
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-misc.css">
+}
+
+<div class="error-wrapper">
+    <div class="error-content fade-in">
+        <i class="fas fa-exclamation-triangle error-icon"></i>
+        <div class="error-code">404</div>
+        <div class="error-title">Oops! Página Não Encontrada</div>
+        <div class="error-description">Parece que a página que você está procurando foi movida ou não existe mais.</div>
+        <a href="/" class="btn btn-back-home">Voltar para a Página Inicial</a>
+    </div>
+</div>
+
+
+
+
+@section PageScripts {
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+}

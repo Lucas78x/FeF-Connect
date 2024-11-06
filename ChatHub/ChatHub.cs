@@ -1,4 +1,5 @@
 using AspnetCoreMvcFull.DTO;
+using Ganss.Xss;
 using Microsoft.AspNetCore.SignalR;
 using System.Net.Http;
 
@@ -11,9 +12,10 @@ public class ChatHub : Hub
   }
   public async Task SendMessage(Guid destinatarioId, string conteudo, string mensagemId, string usuarioAtualId, string remetenteNome)
   {
-
-    await Clients.User(destinatarioId.ToString()).SendAsync("ReceiveMessage", usuarioAtualId,destinatarioId.ToString(), conteudo, remetenteNome, mensagemId);
-    await Clients.Caller.SendAsync("ReceiveMessage", usuarioAtualId, destinatarioId.ToString(), conteudo, remetenteNome,mensagemId);
+    var sanitizer = new HtmlSanitizer();
+    string sanitizedMessage = sanitizer.Sanitize(conteudo);
+    await Clients.User(destinatarioId.ToString()).SendAsync("ReceiveMessage", usuarioAtualId,destinatarioId.ToString(), sanitizedMessage, remetenteNome, mensagemId);
+    await Clients.Caller.SendAsync("ReceiveMessage", usuarioAtualId, destinatarioId.ToString(), sanitizedMessage, remetenteNome,mensagemId);
   }
   public async Task MessageRead(string mensagemId)
   {

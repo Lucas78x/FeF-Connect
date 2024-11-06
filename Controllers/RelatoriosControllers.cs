@@ -12,7 +12,12 @@ public class RelatoriosController : Controller
   private readonly IFileEncryptor _fileEncryptor;
   private readonly IRelatorioService _relatorioService;
 
-  public RelatoriosController(IValidateSession validateSession, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, IFileEncryptor fileEncryptor, IRelatorioService relatorioService)
+  public RelatoriosController(
+      IValidateSession validateSession,
+      IConfiguration configuration,
+      IWebHostEnvironment webHostEnvironment,
+      IFileEncryptor fileEncryptor,
+      IRelatorioService relatorioService)
   {
     _validateSession = validateSession;
     _configuration = configuration;
@@ -23,181 +28,267 @@ public class RelatoriosController : Controller
 
   public async Task<IActionResult> Relatorios()
   {
-    if (!_validateSession.IsUserValid())
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
+    if (!IsUserValid()) return RedirectToLogin();
 
-    var id = HttpContext.Session.GetInt32("Id") ?? -1;
-    if (id == -1)
-    {
-      return RedirectToPage("MiscError", "Pages");
-    }
+    int userId = GetUserIdFromSession();
+    if (userId == -1) return RedirectToErrorPage();
 
     try
     {
-      using var handler = new HttpClientHandler
-      {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
+      var funcionario = await GetFuncionarioAsync(userId);
+      if (funcionario == null) return RedirectToErrorPage();
 
-      using var client = new HttpClient(handler);
-      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
+      SetFuncionarioDataInSession(funcionario);
 
-      var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-      if (!response.IsSuccessStatusCode)
-      {
-        return RedirectToPage("MiscError", "Pages");
-      }
-
-      var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
-      if (funcionario == null)
-      {
-        return RedirectToPage("MiscError", "Pages");
-      }
-
-      _validateSession.SetFuncionarioId(funcionario.Id);
-      _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
-
-      var frontModel = new FrontModel(UserIcon());
-      var partialModel = new PartialModel
-      {
-        front = frontModel,
-        funcionario = funcionario,
-        Folders= GetFoldersFromDirectory()
-      };
-
-      return View("Relatorios", partialModel);
+      var model = CreatePartialModel(funcionario);
+      return View("Relatorios", model);
     }
     catch
     {
-      return View("MiscError", "Pages");
+      return View("MiscError", "MiscError");
     }
-  }
-
-  public List<FolderViewModel> GetFoldersFromDirectory()
-  {
-    var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot/Users/{_validateSession.GetUserId()}/Relatorios");
-
-    if (!Directory.Exists(directoryPath))
-    {
-      return new List<FolderViewModel>();
-    }
-
-    var folders = new List<FolderViewModel>();
-
-    // Obter todas as subpastas (se houver)
-    var subdirectories = Directory.GetDirectories(directoryPath);
-
-    foreach (var subdirectory in subdirectories)
-    {
-      var folderName = Path.GetFileName(subdirectory);
-      var folderViewModel = new FolderViewModel
-      {
-        Name = folderName,
-        Files = new List<string>() // Inicialize a lista de arquivos
-      };
-
-      var files = Directory.GetFiles(subdirectory)
-                           .OrderByDescending(file => System.IO.File.GetCreationTime(file))
-                           .ToArray();
-
-      foreach (var file in files)
-      {
-        var fileName = Path.GetFileName(file);
-        folderViewModel.Files.Add(fileName);
-      }
-
-      folders.Add(folderViewModel);
-    }
-
-    return folders;
-  }
-
-  private string UserIcon()
-  {
-    string patch = "";
-    string key = "";
-    patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-    key = _configuration["Authentication:Secret"];
-
-    ViewBag.Username = _validateSession.GetUsername();
-    return _fileEncryptor.UserIconUrl(patch, _webHostEnvironment.WebRootPath, key, _validateSession.GetUserId(), _validateSession.GetGenero());
-  }
-  public IActionResult AddFolder(string folderName)
-  {
-    // Definir o caminho base onde as pastas são armazenadas
-    var baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot/Users/{_validateSession.GetUserId()}/Relatorios");
-
-    // Criar o caminho completo para a nova pasta
-    var newFolderPath = Path.Combine(baseDirectory, folderName);
-
-    // Verificar se a pasta já existe
-    if (!Directory.Exists(newFolderPath))
-    {
-      // Criar a nova pasta
-      Directory.CreateDirectory(newFolderPath);
-    }
-    else
-    {
-      // Se a pasta já existe, você pode retornar um erro ou mensagem de aviso
-      TempData["ErrorMessage"] = "A pasta já existe.";
-    }
-
-    // Redirecionar para a ação que lista as pastas, passando uma mensagem se houver erro
-    return RedirectToAction("Relatorios");
   }
 
   [HttpPost]
   public IActionResult AddFile(string folderName, string fileName, IFormFile fileUpload)
   {
-    if (fileUpload == null || fileUpload.Length == 0)
-    {
-      return Json(new { success = false });
-    }
+    if (!IsUserValid()) return RedirectToLogin();
 
-    // Definir o caminho base onde as pastas e arquivos são armazenados
-    var baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot/Users/{_validateSession.GetUserId()}/Relatorios");
-
-    // Criar o caminho completo da pasta e do arquivo
-    var folderPath = Path.Combine(baseDirectory, folderName);
-
-    // Verificar se a pasta existe
-    if (!Directory.Exists(folderPath))
-    {
-
-      return Json(new { success = false });
-    }
-
-    // Criar o caminho completo para o novo arquivo
-    var filePath = Path.Combine(folderPath, fileName);
+    if (!IsValidFile(fileUpload)) return Json(new { success = false });
 
     try
     {
-      // Salvar o arquivo no diretório especificado
-      using (var stream = new FileStream(filePath, FileMode.Create))
-      {
-        fileUpload.CopyTo(stream);
-      }
+      SaveFile(folderName, fileName, fileUpload);
+      return Json(new { success = true });
+    }
+    catch
+    {
+      return Json(new { success = false });
+    }
+  }
+
+  public IActionResult AddFolder(string folderName)
+  {
+    if (!IsUserValid()) return RedirectToLogin();
+
+    try
+    {
+      CreateFolder(folderName);
+      return Json(new { success = true });
     }
     catch (Exception ex)
     {
       return Json(new { success = false });
     }
+  }
 
-    return Json(new { success = true });
+  [HttpPost]
+  public IActionResult DeleteFolder(string folderName)
+  {
+    if (!IsUserValid()) return RedirectToLogin();
+
+    try
+    {
+      var folderPath = Path.Combine(GetUserDirectory(), folderName);
+      if (Directory.Exists(folderPath))
+      {
+        Directory.Delete(folderPath, true);
+
+        return Json(new { success = true, message = "Pasta deletada com sucesso!" });
+      }
+      else
+      {
+        return Json(new { success = false, message = "Pasta não encontrada." });
+      }
+    }
+    catch (Exception ex)
+    {
+      return Json(new { success = false, message = $"Erro ao deletar a pasta: {ex.Message}" });
+    }
+  }
+
+  [HttpPost]
+  public IActionResult DeleteFile(string fileUrl)
+  {
+    if (!IsUserValid()) return RedirectToLogin();
+
+    try
+    {
+      fileUrl = fileUrl.Replace("/", "\\");
+      var filePath = GetUserDirectory(true) + fileUrl;
+
+      if (System.IO.File.Exists(filePath))
+      {
+        System.IO.File.Delete(filePath);
+        return Json(new { success = true, message = "Arquivo deletado com sucesso!" });
+      }
+      else
+      {
+        return Json(new { success = false, message = "Arquivo não encontrado." });
+      }
+    }
+    catch (Exception ex)
+    {
+      return Json(new { success = false, message = $"Erro ao deletar o arquivo: {ex.Message}" });
+    }
   }
 
   public IActionResult RedirecToRelatorios()
   {
-    if (_validateSession.IsUserValid())
+    return IsUserValid() ? RedirectToAction("Relatorios") : RedirectToLogin();
+  }
+
+
+  private bool IsUserValid() => _validateSession.IsUserValid();
+
+  private IActionResult RedirectToLogin() => RedirectToAction("LoginBasic", "Auth");
+
+  private IActionResult RedirectToErrorPage() => RedirectToAction("MiscError", "MiscError");
+
+  private int GetUserIdFromSession() => HttpContext.Session.GetInt32("Id") ?? -1;
+
+  private async Task<FuncionarioModel?> GetFuncionarioAsync(int id)
+  {
+    using var client = CreateHttpClient();
+    var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
+
+    return response.IsSuccessStatusCode
+        ? await response.Content.ReadFromJsonAsync<FuncionarioModel>()
+        : null;
+  }
+
+  private HttpClient CreateHttpClient()
+  {
+    var handler = new HttpClientHandler
     {
-      return RedirectToAction("Relatorios", "Relatorios");
-    }
-    else
+      ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+    };
+
+    var client = new HttpClient(handler);
+    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
+    return client;
+  }
+
+  private void SetFuncionarioDataInSession(FuncionarioModel funcionario)
+  {
+    _validateSession.SetFuncionarioId(funcionario.Id);
+    _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
+  }
+
+  private PartialModel CreatePartialModel(FuncionarioModel funcionario)
+  {
+    var frontModel = new FrontModel(GetUserIcon());
+    var folders = GetFoldersFromDirectory();
+
+    return new PartialModel
     {
-      return RedirectToAction("LoginBasic", "Auth");
+      front = frontModel,
+      funcionario = funcionario,
+      Folders = folders
+    };
+  }
+
+  private string GetUserIcon()
+  {
+    var patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
+    var key = _configuration["Authentication:Secret"];
+
+    ViewBag.Username = _validateSession.GetUsername();
+    return _fileEncryptor.UserIconUrl(patch, _webHostEnvironment.WebRootPath, key, _validateSession.GetUserId(), _validateSession.GetGenero());
+  }
+
+  private void CreateFolder(string folderName)
+  {
+    var baseDirectory = GetUserDirectory();
+    var folderPath = Path.Combine(baseDirectory, folderName);
+
+    if (Directory.Exists(folderPath))
+    {
+      return;
     }
+
+    Directory.CreateDirectory(folderPath);
+  }
+
+  private string GetUserDirectory() =>
+      Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot\\Users\\{_validateSession.GetUserId()}\\Relatorios");
+
+  private string GetUserDirectory(bool delete = true) =>
+     Path.Combine(Directory.GetCurrentDirectory(), $"wwwroot");
+
+  private void SaveFile(string folderName, string fileName, IFormFile fileUpload)
+  {
+
+    var uploadExtension = Path.GetExtension(fileUpload.FileName);
+
+    if (string.IsNullOrEmpty(uploadExtension))
+    {
+      throw new InvalidOperationException("O arquivo de upload não possui uma extensão.");
+    }
+
+    var fileNameWithCorrectExtension = Path.ChangeExtension(fileName, uploadExtension);
+
+    var folderPath = Path.Combine(GetUserDirectory(), folderName);
+    if (!Directory.Exists(folderPath))
+    {
+      throw new DirectoryNotFoundException();
+    }
+
+    var filePath = Path.Combine(folderPath, fileNameWithCorrectExtension);
+
+    using var stream = new FileStream(filePath, FileMode.Create);
+
+    fileUpload.CopyTo(stream);
+  }
+
+  private bool IsValidFile(IFormFile fileUpload) => fileUpload != null && fileUpload.Length > 0;
+
+  public List<FolderViewModel> GetFoldersFromDirectory()
+  {
+    var directoryPath = GetUserDirectory();
+    if (!Directory.Exists(directoryPath)) return new List<FolderViewModel>();
+
+    return Directory.GetDirectories(directoryPath).Select(subdirectory =>
+    {
+      var folderName = Path.GetFileName(subdirectory);
+      var files = Directory.GetFiles(subdirectory)
+                           .OrderByDescending(f => System.IO.File.GetCreationTime(f))
+                           .Select(f => GetFormattedPath(f, directoryPath)) // Ensure proper formatting
+                           .ToList();
+
+      return new FolderViewModel
+      {
+        Name = folderName,
+        Files = files
+      };
+    }).ToList();
+
+  }
+
+  private string GetFormattedPath(string filePath, string baseDirectory)
+  {
+
+    baseDirectory = baseDirectory.Replace("\\", "/");
+    filePath = filePath.Replace("\\", "/");
+
+    if (filePath.StartsWith(baseDirectory))
+    {
+      string relativePath = filePath.Substring(baseDirectory.Length);
+
+      if (relativePath.StartsWith("/"))
+      {
+        relativePath = relativePath.Substring(1);
+      }
+
+      int wwwrootIndex = baseDirectory.IndexOf("/wwwroot");
+
+      string userDir = baseDirectory.Substring(wwwrootIndex + "/wwwroot".Length) + "/";
+
+      return "~" + userDir + relativePath;
+    }
+
+
+    return filePath;
+
   }
 }
-

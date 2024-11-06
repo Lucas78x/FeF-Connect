@@ -1,672 +1,514 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using AspnetCoreMvcFull.Models;
-using AspnetCoreMvcFull.Utils;
 using AspnetCoreMvcFull.DTO;
-using AspnetCoreMvcFull.Utils.PDF;
-using System.Text;
-using AspnetCoreMvcFull.Enums;
+using AspnetCoreMvcFull.Models;
 using AspnetCoreMvcFull.Utils.Email;
-using iTextSharp.text.pdf;
+using AspnetCoreMvcFull.Utils.PDF;
+using AspnetCoreMvcFull.Utils;
+using Microsoft.AspNetCore.Mvc;
+using AspnetCoreMvcFull.Enums;
+using System.Text;
 
-
-namespace AspnetCoreMvcFull.Controllers;
-
-public class DashboardsController : Controller
+namespace AspnetCoreMvcFull.Controllers
 {
-  private readonly IValidateSession _validateSession;
-  private readonly IConfiguration _configuration;
-  private readonly IWebHostEnvironment _webHostEnvironment;
-  private readonly IFileEncryptor _fileEncryptor;
-  private readonly IRelatorioService _relatorioService;
-  private readonly IEmailService _emailService;
-  private readonly HttpClient _httpClient;
-  public DashboardsController(IValidateSession validateSession, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, IFileEncryptor fileEncryptor, IRelatorioService relatorioService, IEmailService emailService, HttpClient client)
+  public class DashboardsController : Controller
   {
-    _validateSession = validateSession;
-    _configuration = configuration;
-    _webHostEnvironment = webHostEnvironment;
-    _fileEncryptor = fileEncryptor;
-    _relatorioService = relatorioService;
-    _emailService = emailService;
-    _httpClient = client;
-  }
+    private readonly IValidateSession _validateSession;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly IFileEncryptor _fileEncryptor;
+    private readonly IRelatorioService _relatorioService;
+    private readonly IEmailService _emailService;
+    private readonly HttpClient _httpClient;
 
-  public async Task<IActionResult> Dashboard()
-  {
-    if (!_validateSession.IsUserValid())
+    public DashboardsController(IValidateSession validateSession, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, IFileEncryptor fileEncryptor, IRelatorioService relatorioService, IEmailService emailService, HttpClient client)
     {
-      return RedirectToAction("LoginBasic", "Auth");
+      _validateSession = validateSession;
+      _configuration = configuration;
+      _webHostEnvironment = webHostEnvironment;
+      _fileEncryptor = fileEncryptor;
+      _relatorioService = relatorioService;
+      _emailService = emailService;
+      _httpClient = client;
     }
 
-    var id = HttpContext.Session.GetInt32("Id") ?? -1;
-    if (id == -1)
+
+    public async Task<IActionResult> Dashboard()
     {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
+      if (!IsUserValid()) return RedirectToLogin();
 
-    try
-    {
-      using var handler = new HttpClientHandler
+      var userId = GetUserId();
+      if (userId == -1) return RedirectToLogin();
+
+      try
       {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
+        var funcionario = await FetchFuncionarioById(userId);
+        if (funcionario == null) return RedirectToLogin();
 
-      using var client = new HttpClient(handler);
-      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
+        PrepareSession(funcionario);
+        await SetViewBagRequisicoesAsync();
 
-      var funcionarioResponse = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-      if (!funcionarioResponse.IsSuccessStatusCode)
-      {
-        return RedirectToAction("LoginBasic", "Auth");
+        var partialModel = CreatePartialModel(funcionario);
+        return View(partialModel);
       }
-
-      var funcionario = await funcionarioResponse.Content.ReadFromJsonAsync<FuncionarioModel>();
-      if (funcionario == null)
+      catch
       {
-        return RedirectToAction("LoginBasic", "Auth");
+        return RedirectToLogin();
       }
-
-      _validateSession.SetFuncionarioId(funcionario.Id);
-      _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
-
-      var frontModel = new FrontModel(UserIcon());
-      var partialModel = new PartialModel
-      {
-        front = frontModel,
-        funcionario = funcionario
-      };
-
-      var requisicoesResponse = await client.GetAsync($"http://localhost:5235/api/Auth/listaRequisicoes");
-      if (requisicoesResponse.IsSuccessStatusCode)
-      {
-        var requisicoes = await requisicoesResponse.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
-        if (requisicoes != null)
-        {
-          var requisicoesPorStatus = requisicoes
-              .GroupBy(r => r.Status)
-              .Select(group => new
-              {
-                Status = group.Key.ToString(),
-                Count = group.Count()
-              }).ToList();
-
-          ViewBag.Statuses = requisicoesPorStatus.Select(r => r.Status).ToList();
-          ViewBag.Counts = requisicoesPorStatus.Select(r => r.Count).ToList();
-        }
-        else
-        {
-          ViewBag.Counts = 0;
-        }
-      }
-      else
-      {
-        ViewBag.Counts = 0;
-      }
-
-      return View(partialModel);
-    }
-    catch
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
-  private string UserIcon()
-  {
-    string patch = "";
-    string key = "";
-    patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-    key = _configuration["Authentication:Secret"];
-
-    ViewBag.Username = _validateSession.GetUsername();
-    return _fileEncryptor.UserIconUrl(patch, _webHostEnvironment.WebRootPath, key, _validateSession.GetUserId(), _validateSession.GetGenero());
-  }
-  private List<PayslipModel> UserCheque()
-  {
-    string patch = "";
-    string key = "";
-    patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-    key = _configuration["Authentication:Secret"];
-
-    ViewBag.Username = _validateSession.GetUsername();
-    return _fileEncryptor.UserCheque(patch, _webHostEnvironment.WebRootPath, key, _validateSession.GetUserId());
-  }
-  private string UserEscala()
-  {
-    string patch = "";
-    string key = "";
-    patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-    key = _configuration["Authentication:Secret"];
-
-    ViewBag.Username = _validateSession.GetUsername();
-    return _fileEncryptor.UserEscala(patch, _webHostEnvironment.WebRootPath, key);
-  }
-
-
-  //TODO: Separar Depois
-  public async Task<IActionResult> Pessoal()
-  {
-    if (!_validateSession.IsUserValid())
-    {
-      return RedirectToAction("LoginBasic", "Auth");
     }
 
-    var id = HttpContext.Session.GetInt32("Id") ?? -1;
-    if (id == -1)
+    private async Task<FuncionarioModel> FetchFuncionarioById(int id)
     {
-      return RedirectToPage("MiscError", "Pages");
-    }
-
-    try
-    {
-      using var handler = new HttpClientHandler
-      {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
-
-      using var client = new HttpClient(handler);
-      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
+      using var client = CreateHttpClient();
       var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
+      return response.IsSuccessStatusCode ? await response.Content.ReadFromJsonAsync<FuncionarioModel>() : null;
+    }
+
+    private async Task SetViewBagRequisicoesAsync()
+    {
+      using var client = CreateHttpClient();
+      var response = await client.GetAsync($"http://localhost:5235/api/Auth/listaRequisicoes");
+
       if (!response.IsSuccessStatusCode)
       {
-        return RedirectToPage("MiscError", "Pages");
+        ViewBag.Counts = 0;
+        return;
       }
 
-      var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
-      if (funcionario == null)
+      var requisicoes = await response.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
+      if (requisicoes == null)
       {
-        return RedirectToPage("MiscError", "Pages");
+        ViewBag.Counts = 0;
+        return;
       }
 
-      _validateSession.SetFuncionarioId(funcionario.Id);
+      var requisicoesPorStatus = requisicoes
+          .GroupBy(r => r.Status)
+          .Select(group => new { Status = group.Key.ToString(), Count = group.Count() })
+          .ToList();
 
-      var frontModel = new FrontModel(UserIcon());
-      var partialModel = new PartialModel
+      ViewBag.Statuses = requisicoesPorStatus.Select(r => r.Status).ToList();
+      ViewBag.Counts = requisicoesPorStatus.Select(r => r.Count).ToList();
+    }
+
+    private HttpClient CreateHttpClient()
+    {
+      var handler = new HttpClientHandler
+      {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+      };
+
+      var client = new HttpClient(handler);
+      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
+      return client;
+    }
+
+    private PartialModel CreatePartialModel(FuncionarioModel funcionario)
+    {
+      var frontModel = new FrontModel(GetUserIcon());
+      return new PartialModel
       {
         front = frontModel,
         funcionario = funcionario
       };
+    }
 
-      return View("Pessoal", partialModel);
-    }
-    catch
+    private string GetUserIcon()
     {
-      return View("MiscError", "Pages");
-    }
-  }
-  public IActionResult RedirecToPerson()
-  {
-    if (_validateSession.IsUserValid())
-    {
-      return RedirectToAction("Pessoal", "Dashboards");
-    }
-    else
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
+      string path = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
+      string key = _configuration["Authentication:Secret"];
 
-  public async Task<IActionResult> ChangePhoto(IFormFile file)
-  {
-    if (_validateSession.IsUserValid())
+      ViewBag.Username = _validateSession.GetUsername();
+      return _fileEncryptor.UserIconUrl(path, _webHostEnvironment.WebRootPath, key, _validateSession.GetUserId(), _validateSession.GetGenero());
+    }
+
+    private bool IsUserValid() => _validateSession.IsUserValid();
+
+    private int GetUserId() => HttpContext.Session.GetInt32("Id") ?? -1;
+
+    private void PrepareSession(FuncionarioModel funcionario)
     {
+      _validateSession.SetFuncionarioId(funcionario.Id);
+      _validateSession.SetFuncionarioPermissao(funcionario.Permissao.GetHashCode());
+    }
+
+    private IActionResult RedirectToLogin() => RedirectToAction("LoginBasic", "Auth");
+
+
+    public async Task<IActionResult> Pessoal()
+    {
+      if (!IsUserValid()) return RedirectToLogin();
+
+      var userId = GetUserId();
+      if (userId == -1) return RedirectToErrorPage();
+
+      try
+      {
+        var funcionario = await FetchFuncionarioById(userId);
+        if (funcionario == null) return RedirectToErrorPage();
+
+        _validateSession.SetFuncionarioId(funcionario.Id);
+        var partialModel = CreatePartialModel(funcionario);
+        return View("Pessoal", partialModel);
+      }
+      catch
+      {
+        return RedirectToErrorPage();
+      }
+    }
+
+    private IActionResult RedirectToErrorPage() => RedirectToAction("MiscError", "MiscError");
+
+
+    public async Task<IActionResult> ChangePhoto(IFormFile file)
+    {
+      if (!IsUserValid()) return RedirectToLogin();
+
       await ChangePhotoAsync(file);
       return Json(new { success = true });
     }
-    else
+
+    private async Task ChangePhotoAsync(IFormFile photoUpload)
     {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
+      string path = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
+      string key = _configuration["Authentication:Secret"];
 
-  private async Task ChangePhotoAsync(IFormFile photoUpload)
-  {
-    string patch = "";
-    string key = "";
-    patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-    key = _configuration["Authentication:Secret"];
-
-    await _fileEncryptor.ChangePhoto(photoUpload, patch, key, _validateSession.GetUserId());
-  }
-
-  public async Task<IActionResult> Settings()
-  {
-    if (!_validateSession.IsUserValid())
-    {
-      return RedirectToAction("LoginBasic", "Auth");
+      await _fileEncryptor.ChangePhoto(photoUpload, path, key, _validateSession.GetUserId());
     }
 
-    var id = HttpContext.Session.GetInt32("Id") ?? -1;
-    if (id == -1)
+    public IActionResult RedirecToPerson()
     {
-      return RedirectToPage("MiscError", "Pages");
+      return IsUserValid() ? RedirectToAction("Pessoal", "Dashboards") : RedirectToLogin();
     }
 
-    try
+    private string GetUserPatch()
     {
-      using var handler = new HttpClientHandler
+      return Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
+    }
+
+    private string GetUserKey()
+    {
+      return _configuration["Authentication:Secret"];
+    }
+
+    private List<PayslipModel> UserCheque()
+    {
+      ViewBag.Username = _validateSession.GetUsername();
+      return _fileEncryptor.UserCheque(GetUserPatch(), _webHostEnvironment.WebRootPath, GetUserKey(), _validateSession.GetUserId());
+    }
+
+    private string UserEscala()
+    {
+      ViewBag.Username = _validateSession.GetUsername();
+      return _fileEncryptor.UserEscala(GetUserPatch(), _webHostEnvironment.WebRootPath, GetUserKey());
+    }
+
+    public async Task<IActionResult> ContraCheque()
+    {
+      if (!_validateSession.IsUserValid())
       {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
-
-      using var client = new HttpClient(handler);
-      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-      var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-      if (!response.IsSuccessStatusCode)
-      {
-        return RedirectToPage("MiscError", "Pages");
+        return RedirectToAction("LoginBasic", "Auth");
       }
 
-      var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
+      var userId = HttpContext.Session.GetInt32("Id") ?? -1;
+      var funcionario = await FetchFuncionarioById(userId);
+
       if (funcionario == null)
       {
-        return RedirectToPage("MiscError", "Pages");
+        return RedirectToAction("MiscError", "MiscError");
       }
 
       _validateSession.SetFuncionarioId(funcionario.Id);
 
-      var frontModel = new FrontModel(UserIcon());
+      var partialModel = new PartialModel
+      {
+        funcionario = funcionario,
+        front = new FrontModel(GetUserIcon()),
+        Payslips = UserCheque(),
+        FilterDate = DateTime.Now,
+      };
+
+      return View("ContraCheque", partialModel);
+    }
+
+    public IActionResult RedirecToCheque()
+    {
+      return _validateSession.IsUserValid()
+          ? RedirectToAction("ContraCheque", "Dashboards")
+          : RedirectToAction("LoginBasic", "Auth");
+    }
+
+    public async Task<IActionResult> Escala()
+    {
+      if (!_validateSession.IsUserValid())
+      {
+        return RedirectToAction("LoginBasic", "Auth");
+      }
+
+      var id = HttpContext.Session.GetInt32("Id") ?? -1;
+      var funcionario = await FetchFuncionarioById(id);
+
+      if (funcionario == null)
+      {
+        return RedirectToAction("MiscError", "MiscError");
+      }
+
+      _validateSession.SetFuncionarioId(funcionario.Id);
+
+      var partialModel = new PartialModel
+      {
+        front = new FrontModel(GetUserIcon()),
+        funcionario = funcionario,
+        UtilUrl = new FrontModel(UserEscala())
+      };
+
+      return View("Escala", partialModel);
+    }
+
+    public IActionResult RedirecToEscala()
+    {
+      return _validateSession.IsUserValid()
+          ? RedirectToAction("Escala", "Dashboards")
+          : RedirectToAction("LoginBasic", "Auth");
+    }
+
+    public async Task<IActionResult> Requisicoes()
+    {
+      if (!_validateSession.IsUserValid())
+      {
+        return RedirectToAction("LoginBasic", "Auth");
+      }
+
+      var userId = _validateSession.GetUserId();
+      var funcionario = await FetchFuncionarioById(userId);
+
+      if (funcionario == null)
+      {
+        return RedirectToAction("MiscError", "MiscError");
+      }
+
+      _validateSession.SetFuncionarioId(funcionario.Id);
+
+      var frontModel = new FrontModel(GetUserIcon());
+      var escalaModel = new FrontModel(UserEscala());
       var partialModel = new PartialModel
       {
         front = frontModel,
-        funcionario = funcionario
+        funcionario = funcionario,
+        UtilUrl = escalaModel
       };
 
-      return View("Settings", partialModel);
-    }
-    catch
-    {
-      return RedirectToPage("MiscError", "Pages");
-    }
-  }
-  public IActionResult RedirecToSettings()
-  {
-    if (_validateSession.IsUserValid())
-    {
-      return RedirectToAction("Settings", "Dashboards");
-    }
-    else
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
-  public async Task<IActionResult> ContraCheque()
-  {
-    if (!_validateSession.IsUserValid())
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-
-    var userId = HttpContext.Session.GetInt32("Id") ?? -1;
-    string tokenKey = _configuration["Authentication:TokenKey"];
-
-    var funcionario = await FetchFuncionarioAsync(userId, tokenKey);
-    if (funcionario == null)
-    {
-      return RedirectToPage("MiscError", "Pages");
-    }
-
-    _validateSession.SetFuncionarioId(funcionario.Id);
-
-    var frontModel = new FrontModel(UserIcon());
-    var partialModel = new PartialModel
-    {
-      funcionario = funcionario,
-      front = frontModel,
-      Payslips = UserCheque(),
-      FilterDate = DateTime.Now,
-    };
-
-    return View("ContraCheque", partialModel);
-  }
-
-  private async Task<FuncionarioModel> FetchFuncionarioAsync(int userId, string tokenKey)
-  {
-    using var handler = new HttpClientHandler
-    {
-      ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-    };
-
-    using var client = new HttpClient(handler);
-    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenKey);
-
-    var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={userId}");
-    if (response.IsSuccessStatusCode)
-    {
-      return await response.Content.ReadFromJsonAsync<FuncionarioModel>();
-    }
-
-    return null;
-  }
-
-  public IActionResult RedirecToCheque()
-  {
-    if (_validateSession.IsUserValid())
-    {
-      return RedirectToAction("ContraCheque", "Dashboards");
-    }
-    else
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
-  public async Task<IActionResult> Escala()
-  {
-    if (_validateSession.IsUserValid())
-    {
-      var handler = new HttpClientHandler
+      var requisicoesResponse = await FetchRequisicoesAsync(funcionario);
+      if (requisicoesResponse != null)
       {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
-
-      var client = new HttpClient(handler);
-      var id = HttpContext.Session.GetInt32("Id") ?? -1;
-
-      try
-      {
-
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-        var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={id}");
-        if (response.IsSuccessStatusCode)
-        {
-          var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
-          if (funcionario != null)
-          {
-            _validateSession.SetFuncionarioId(funcionario.Id);
-            var frontModel = new FrontModel(UserIcon());
-            var escalaModel = new FrontModel(UserEscala());
-            var partialModel = new PartialModel();
-            partialModel.front = frontModel;
-            partialModel.funcionario = funcionario;
-            partialModel.UtilUrl = escalaModel;
-
-            return View("Escala", partialModel);
-          }
-          {
-
-            return RedirectToPage("MiscError", "Pages");
-          }
-        }
-      }
-      catch
-      {
-        return View("MiscError", "Pages");
-
+        partialModel.Requisicoes = requisicoesResponse;
       }
 
-    }
-    return RedirectToAction("LoginBasic", "Auth");
-  }
-  public IActionResult RedirecToEscala()
-  {
-    if (_validateSession.IsUserValid())
-    {
-      return RedirectToAction("Escala", "Dashboards");
-    }
-    else
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
-  public async Task<IActionResult> Requisicoes()
-  {
-    if (_validateSession.IsUserValid())
-    {
-      var handler = new HttpClientHandler
+      var funcionarios = await _httpClient.GetFromJsonAsync<List<FuncionarioModel>>("http://localhost:5235/api/Auth/funcionarios");
+      if (funcionarios != null)
       {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
-
-      var client = new HttpClient(handler);
-
-      try
-      {
-
-        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-        var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={_validateSession.GetUserId()}");
-        if (response.IsSuccessStatusCode)
-        {
-          var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
-          if (funcionario != null)
-          {
-            _validateSession.SetFuncionarioId(funcionario.Id);
-            var frontModel = new FrontModel(UserIcon());
-            var escalaModel = new FrontModel(UserEscala());
-            var partialModel = new PartialModel();
-            var funcionarios = await _httpClient.GetFromJsonAsync<List<FuncionarioModel>>("http://localhost:5235/api/Auth/funcionarios");
-            partialModel.front = frontModel;
-            partialModel.funcionario = funcionario;
-            partialModel.UtilUrl = escalaModel;
-            if(funcionarios != null)
-            {
-              partialModel.Funcionarios = funcionarios.Where( x=> x.Id != funcionario.Id).ToList();
-            }
-            response = await client.PostAsJsonAsync("http://localhost:5235/api/Auth/requisicoes", funcionario);
-
-            if (response.IsSuccessStatusCode)
-            {
-              var requisicoes = await response.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
-              if (requisicoes != null)
-              {
-                partialModel.Requisicoes = requisicoes;
-              }
-            }
-
-            return View("Requisicoes", partialModel);
-          }
-          {
-
-            return RedirectToPage("MiscError", "Pages");
-          }
-        }
-      }
-      catch
-      {
-        return View("MiscError", "Pages");
-
+        partialModel.Funcionarios = funcionarios.Where(x => x.Id != funcionario.Id).ToList();
       }
 
+      return View("Requisicoes", partialModel);
     }
-    return RedirectToAction("LoginBasic", "Auth");
-  }
-  public IActionResult RedirecToRequisicoes()
-  {
-    if (_validateSession.IsUserValid())
+
+    private async Task<List<RequisicoesModel>> FetchRequisicoesAsync(FuncionarioModel funcionario)
     {
-      return RedirectToAction("Requisicoes", "Dashboards");
-    }
-    else
-    {
-      return RedirectToAction("LoginBasic", "Auth");
-    }
-  }
-
-  [HttpPost]
-  public async Task<IActionResult> GerarPDF(Guid id)
-  {
-    var handler = new HttpClientHandler
-    {
-      ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-    };
-
-    var client = new HttpClient(handler);
-
-    try
-    {
-
-      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-      var response = await client.GetAsync($"http://localhost:5235/api/Auth/requisicao?Id={id}");
+      using var client = CreateHttpClient();
+      var response = await client.PostAsJsonAsync("http://localhost:5235/api/Auth/requisicoes", funcionario);
       if (response.IsSuccessStatusCode)
       {
-        var requisicao = await response.Content.ReadFromJsonAsync<RequisicoesModel>();
+        return await response.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
+      }
+      return null;
+    }
+
+    public IActionResult RedirecToRequisicoes()
+    {
+      return _validateSession.IsUserValid()
+          ? RedirectToAction("Requisicoes", "Dashboards")
+          : RedirectToAction("LoginBasic", "Auth");
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> GerarPDF(Guid id)
+    {
+      try
+      {
+        var requisicao = await GetRequisicaoByIdAsync(id);
         if (requisicao != null)
         {
           var pdfBytes = _relatorioService.GerarRelatorio(requisicao);
-
-          return File(pdfBytes, "application/pdf", "requisicao-" + id + ".pdf");
+          return File(pdfBytes, "application/pdf", $"requisicao-{id}.pdf");
         }
       }
-    }
-    catch
-    {
-      return BadRequest();
-    }
-
-    return BadRequest();
-  }
-
-  [HttpPost]
-  public async Task<IActionResult> Atualizar([FromBody] RequisicaoModel model)
-  {
-    if (ModelState.IsValid)
-    {
-
-      var handler = new HttpClientHandler
+      catch
       {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-      };
+        return BadRequest("Failed to generate PDF.");
+      }
 
-      var client = new HttpClient(handler);
+      return BadRequest("Requisição não encontrada.");
+    }
 
-      var requestBody = new
-      {
-        Id = model.Id,
-        Requisitante = model.Requisitante,
-        Descricao = model.Descricao,
-        DescricaoSolucao = model.DescricaoSolucao,
-        Status = model.Status,
-        DataFinalizacao = model.DataFinalizacao
-      };
-      var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+    [HttpPost]
+    public async Task<IActionResult> Atualizar([FromBody] RequisicaoModel model)
+    {
+      if (!ModelState.IsValid)
+        return Json(new { success = false, message = "Dados inválidos." });
 
       try
       {
-
-        var response = await client.PostAsync("http://localhost:5235/api/Auth/atualizarRequisicao", content);
-
-        if (response.IsSuccessStatusCode)
+        var requisicaoModel = await UpdateRequisicaoAsync(model);
+        if (requisicaoModel != null)
         {
-          var requisicaoModel = await response.Content.ReadFromJsonAsync<RequisicoesModel>();
-          if (requisicaoModel != null)
-          {
-            var funcionarios = await _httpClient.GetFromJsonAsync<List<FuncionarioModel>>("http://localhost:5235/api/Auth/funcionarios");
-            if (funcionarios != null)
-            {
-              var requisitante = funcionarios.FirstOrDefault(x => x.Id == requisicaoModel.RequisitanteId);
-              var destinatario = funcionarios.FirstOrDefault(x => x.Id == requisicaoModel.FuncionarioId);
-
-              if (requisitante != null)
-              {
-                _emailService.EnviarEmail($"{requisitante.Nome} {requisitante.Sobrenome}", model.Descricao, requisitante.Email, requisicaoModel.DescricaoSolucao, requisicaoModel.Status);
-              }
-              if(destinatario != null)
-              {
-                _emailService.EnviarEmail($"{destinatario.Nome} {destinatario.Sobrenome}", model.Descricao, destinatario.Email, requisicaoModel.DescricaoSolucao, requisicaoModel.Status);
-              }
-            }
-          }
-            return Json(new { success = true });
-          }
-          else
-          {
-            return Json(new { success = false, message = "Requisição não encontrada." });
-
-          }
+          await SendEmails(requisicaoModel, model);
+          return Json(new { success = true });
         }
+      }
       catch
       {
         return Json(new { success = false, message = "Ocorreu um erro inesperado." });
-
       }
+
+      return Json(new { success = false, message = "Requisição não encontrada." });
     }
 
-    return Json(new { success = false, message = "Dados inválidos." });
-  }
-
-  [HttpGet]
-  public async Task<IActionResult> FiltrarRequisicoes(string requisitante, string status)
-  {
-
-    var handler = new HttpClientHandler
+    [HttpGet]
+    public async Task<IActionResult> FiltrarRequisicoes(string requisitante, string status)
     {
-      ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-    };
-
-    var client = new HttpClient(handler);
-
-    try
-    {
-
-      client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["Authentication:TokenKey"]);
-
-      var response = await client.GetAsync($"http://localhost:5235/api/Auth/funcionario?Id={_validateSession.GetUserId()}");
-      if (response.IsSuccessStatusCode)
+      try
       {
-        var funcionario = await response.Content.ReadFromJsonAsync<FuncionarioModel>();
+        var funcionario = await FetchFuncionarioById(_validateSession.GetUserId());
         if (funcionario != null)
         {
-
-          response = await client.PostAsJsonAsync("http://localhost:5235/api/Auth/requisicoes", funcionario);
-
-          if (response.IsSuccessStatusCode)
-          {
-            var requisicoes = await response.Content.ReadFromJsonAsync<List<RequisicoesModel>>();
-            if (requisicoes != null)
-            {
-              List<RequisicoesModel> filtroRequisicoes = null;
-
-              if (!string.IsNullOrEmpty(requisitante) && !string.IsNullOrEmpty(status))
-              {
-                filtroRequisicoes = requisicoes.Where(x => x.Status == (TipoStatusEnum)Enum.Parse(typeof(TipoStatusEnum), status) && x.RequisitanteNome.ToUpper() == requisitante.ToUpper()).ToList();
-              }
-              else if (!string.IsNullOrEmpty(status))
-              {
-                filtroRequisicoes = requisicoes.Where(x => x.Status == (TipoStatusEnum)Enum.Parse(typeof(TipoStatusEnum), status)).ToList();
-              }
-              else if (!string.IsNullOrEmpty(requisitante))
-              {
-                filtroRequisicoes = requisicoes.Where(x => x.RequisitanteNome.ToUpper() == requisitante.ToUpper()).ToList();
-              }
-              else
-              {
-                filtroRequisicoes = requisicoes;
-              }
-
-              return Json(new
-              {
-                success = true,
-                requisicoes = filtroRequisicoes
-              });
-
-            }
-          }
-
+          var requisicoes = await GetRequisicoesAsync(funcionario);
+          var filtroRequisicoes = FilterRequisicoes(requisicoes, requisitante, status);
+          return Json(new { success = true, requisicoes = filtroRequisicoes });
         }
       }
-
-      return Json(new
+      catch (Exception ex)
       {
-        success = false,
-        message = "Erro inesperado"
-      });
+        return Json(new { success = false, message = ex.Message });
+      }
+
+      return Json(new { success = false, message = "Erro inesperado" });
     }
-    catch (Exception ex)
+
+    private async Task<RequisicoesModel> GetRequisicaoByIdAsync(Guid id)
     {
-      return Json(new
-      {
-        success = false,
-        message = ex.Message
-      });
-
+      using var client = CreateHttpClient();
+      var response = await client.GetAsync($"http://localhost:5235/api/Auth/requisicao?Id={id}");
+      return response.IsSuccessStatusCode
+          ? await response.Content.ReadFromJsonAsync<RequisicoesModel>()
+          : null;
     }
+
+    private async Task<RequisicoesModel> UpdateRequisicaoAsync(RequisicaoModel model)
+    {
+      using var client = CreateHttpClient();
+      var requestBody = new
+      {
+        model.Id,
+        model.Requisitante,
+        model.Descricao,
+        model.DescricaoSolucao,
+        model.Status,
+        model.DataFinalizacao
+      };
+
+      var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+      var response = await client.PostAsync("http://localhost:5235/api/Auth/atualizarRequisicao", content);
+
+      return response.IsSuccessStatusCode
+          ? await response.Content.ReadFromJsonAsync<RequisicoesModel>()
+          : null;
+    }
+
+
+
+    private async Task<List<RequisicoesModel>> GetRequisicoesAsync(FuncionarioModel funcionario)
+    {
+      using var client = CreateHttpClient();
+      var response = await client.PostAsJsonAsync("http://localhost:5235/api/Auth/requisicoes", funcionario);
+      return response.IsSuccessStatusCode
+          ? await response.Content.ReadFromJsonAsync<List<RequisicoesModel>>()
+          : new List<RequisicoesModel>();
+    }
+
+    private async Task SendEmails(RequisicoesModel requisicaoModel, RequisicaoModel model)
+    {
+      var funcionarios = await GetFuncionariosAsync();
+      var requisitante = funcionarios.FirstOrDefault(x => x.Id == requisicaoModel.RequisitanteId);
+      var destinatario = funcionarios.FirstOrDefault(x => x.Id == requisicaoModel.FuncionarioId);
+
+      if (requisitante != null)
+      {
+        var pdfBytes = _relatorioService.GerarRelatorio(requisicaoModel);
+        _emailService.EnviarEmail(
+            $"{requisitante.Nome} {requisitante.Sobrenome}",
+            model.Descricao,
+            requisitante.Email,
+            requisicaoModel.DescricaoSolucao,
+            requisicaoModel.Status,
+            pdfBytes
+        );
+      }
+
+      if (destinatario != null)
+      {
+        var pdfBytes = _relatorioService.GerarRelatorio(requisicaoModel);
+        _emailService.EnviarEmail(
+            $"{destinatario.Nome} {destinatario.Sobrenome}",
+            model.Descricao,
+            destinatario.Email,
+            requisicaoModel.DescricaoSolucao,
+            requisicaoModel.Status,
+            pdfBytes
+        );
+      }
+      else
+      {
+        if (requisicaoModel != null)
+        {
+          var destionation = funcionarios.Where(x => x.Permissao == requisicaoModel.Setor && x.Email != requisitante?.Email).ToList();
+          if (destionation.Any())
+          {
+            var pdfBytes = _relatorioService.GerarRelatorio(requisicaoModel);
+
+            foreach (var func in destionation)
+            {
+
+              _emailService.EnviarEmail(
+                  $"{func.Nome} {func.Sobrenome}",
+                  model.Descricao,
+                  func.Email,
+                  requisicaoModel.DescricaoSolucao,
+                  requisicaoModel.Status,
+                  pdfBytes
+              );
+            }
+          }
+        }
+      }
+    }
+
+    private async Task<List<FuncionarioModel>> GetFuncionariosAsync()
+    {
+      using var client = CreateHttpClient();
+      var response = await client.GetAsync("http://localhost:5235/api/Auth/funcionarios");
+      return response.IsSuccessStatusCode
+          ? await response.Content.ReadFromJsonAsync<List<FuncionarioModel>>()
+          : new List<FuncionarioModel>();
+    }
+
+    private List<RequisicoesModel> FilterRequisicoes(List<RequisicoesModel> requisicoes, string requisitante, string status)
+    {
+      return requisicoes.Where(x =>
+          (string.IsNullOrEmpty(requisitante) || x.RequisitanteNome.ToUpper() == requisitante.ToUpper()) &&
+          (string.IsNullOrEmpty(status) || x.Status == (TipoStatusEnum)Enum.Parse(typeof(TipoStatusEnum), status))
+      ).ToList();
+    }
+
+
   }
-
 }
-
-
-

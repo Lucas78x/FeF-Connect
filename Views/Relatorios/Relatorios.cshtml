@@ -12,77 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            margin-top: 20px;
-        }
-
-        .folder {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Distributes space between items */
-            height: auto; /* Allow the height to expand based on content */
-            max-height: 300px; /* Set a maximum height */
-            overflow: hidden; /* Hides overflow content */
-            padding: 10px; /* Add padding for better spacing */
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-
-            .folder:hover {
-                background-color: #f1f1f1;
-            }
-
-        .file-list {
-            flex: 1; /* Allows the list to expand */
-            margin-top: 10px;
-            max-height: 150px; /* Adjust as needed */
-            overflow-y: auto; /* Adds vertical scroll */
-        }
-
-        .file-item {
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-        }
-
-            .file-item i {
-                font-size: 1.2rem; /* Slightly larger icon */
-                color: #6c757d;
-                margin-right: 8px;
-            }
-
-            .file-item:hover {
-                text-decoration: underline;
-            }
-
-        .error-message {
-            color: red;
-            font-size: 14px;
-        }
-
-        .modal-content {
-            border-radius: 8px;
-        }
-
-        .modal-header {
-            background-color: #007bff;
-            color: #ffffff;
-        }
-
-        .modal-footer .btn {
-            border-radius: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="~/vendor/css//relatorios.css">
 </head>
 <body>
     <div class="container">
@@ -96,26 +26,42 @@
             {
                 <div class="col-md-4 mb-4">
                     <div class="folder p-3">
-                        <div class="folder-icon">
+                        <div class="folder-icon d-flex justify-content-between align-items-center">
                             <i class="bi bi-folder"></i>
+                            <!-- Botão de exclusão da pasta -->
+                            <button class="btn btn-link text-danger delete-folder" data-folder-id="@folder.Name">
+                                <i class="bi bi-x"></i>
+                            </button>
                         </div>
                         <div class="folder-name">
                             <h5>@folder.Name</h5>
                         </div>
                         <div class="file-list">
                             @if (folder.Files.Any())
+
                             {
                                 <ul class="list-unstyled">
                                     @foreach (var file in folder.Files)
+
                                     {
-                                        <li class="file-item">
-                                            <i class="bi bi-file-earmark"></i>
-                                            <a href="#">@file</a>
+
+                                        var fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                                        <li class="file-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-file-earmark"></i>
+                                                <a href="javascript:void(0)" class="view-file" data-file-url="@Url.Content(file)" data-file-name="@fileName">@fileName</a>
+                                            </div>
+                                            <!-- Botão de exclusão do arquivo -->
+                                            <button class="btn btn-link text-danger delete-file" data-file-url="@Url.Content(file)">
+                                                <i class="bi bi-x"></i>
+                                            </button>
                                         </li>
                                     }
                                 </ul>
                             }
+
                             else
+
                             {
                                 <p>Nenhum arquivo encontrado.</p>
                             }
@@ -161,10 +107,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addFileModalLabel">Adicionar Novo Arquivo</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title" id="addFileModalLabel">Adicionar Novo Arquivo</h5>                 
                 </div>
                 <form asp-action="AddFile" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
@@ -177,12 +120,29 @@
                             <label for="fileName">Nome do Arquivo</label>
                             <input type="text" class="form-control" id="fileName" name="fileName" required />
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Adicionar</button>
-                    </div>
+                    </div>                  
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Visualizar Arquivo -->
+    <div class="modal fade" id="viewFileModal" tabindex="-1" role="dialog" aria-labelledby="viewFileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewFileModalLabel">Visualizar Arquivo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <iframe id="fileIframe" style="width: 100%; height: 500px;" frameborder="0"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <a id="downloadFileLink" class="btn btn-primary" download>Baixar Arquivo</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -191,23 +151,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        $('#addFileModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
-            var folderName = button.data('folder'); // Extract info from data-* attributes
+        // Ao exibir o modal para adicionar uma nova pasta
+        $('#addFolderModal').on('show.bs.modal', function (event) {
             var modal = $(this);
-            modal.find('.modal-body #folderName').val(folderName);
+            // Limpa o campo de entrada do nome da pasta
+            modal.find('.modal-body #folderName').val('');
         });
 
         $(document).ready(function () {
+            // Quando o formulário de adicionar pasta for enviado
+            $('#addFolderModal form').on('submit', function (event) {
+                event.preventDefault(); // Evita o envio do formulário padrão
+
+                var folderName = $('#folderName').val();
+
+                // Verifica se o nome da pasta foi preenchido
+                if (folderName === "") {
+                    alert('Por favor, insira o nome da pasta.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("AddFolder", "Relatorios")', // Ajuste para o endpoint de adicionar pasta
+                    type: 'POST',
+                    data: { folderName: folderName }, // Envia apenas o nome da pasta
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(); // Recarrega a página para atualizar a lista de pastas
+                        } else {
+                            alert('Erro ao adicionar a pasta.');
+                        }
+                    },
+                    error: function () {
+                        alert('Falha ao adicionar a pasta.');
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        // Ao exibir o modal para adicionar um novo arquivo
+        $('#addFileModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); // Botão que acionou o modal
+            var folderName = button.data('folder'); // Extrai a info do data-folder
+            var modal = $(this);
+            modal.find('.modal-body #folderName').val(folderName); // Define a pasta onde o arquivo será adicionado
+        });
+
+        $(document).ready(function () {
+            // Quando o formulário de adicionar arquivo for enviado
             $('#addFileModal form').on('submit', function (event) {
-                event.preventDefault(); // Previne o envio do formulário padrão
+                event.preventDefault(); // Evita o envio do formulário padrão
 
                 var formData = new FormData(this);
                 var folderName = $('#folderName').val();
-                formData.append('folderName', folderName);
+                formData.append('folderName', folderName); // Adiciona o nome da pasta ao FormData
 
                 $.ajax({
-                    url: '@Url.Action("AddFile", "Relatorios")',
+                    url: '@Url.Action("AddFile", "Relatorios")', // Ajuste para o endpoint de adicionar arquivo
                     type: 'POST',
                     data: formData,
                     contentType: false,
@@ -225,6 +227,114 @@
                 });
             });
         });
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Configuração do modal para adicionar arquivo
+            $('#addFileModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+            var folderName = button.data('folder');
+            var modal = $(this);
+            modal.find('.modal-body #folderName').val(folderName);
+            });
+
+            // Evento para enviar o formulário de adicionar arquivo
+            $('#addFileModal form').on('submit', function (event) {
+                event.preventDefault(); // Previne o envio do formulário padrão
+
+            var formData = new FormData(this);
+            var folderName = $('#folderName').val();
+            formData.append('folderName', folderName);
+
+            $.ajax({
+                url: '@Url.Action("AddFile", "Relatorios")',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                        if (response.success) {
+                location.reload(); // Recarrega a página para atualizar a lista de arquivos
+                        } else {
+                alert('Erro ao adicionar o arquivo.');
+                        }
+                    },
+            error: function () {
+                alert('Falha ao adicionar o arquivo.');
+                    }
+                });
+            });
+
+            // Configuração do modal para visualizar arquivo
+            $('.view-file').on('click', function () {
+                var fileUrl = $(this).data('file-url');
+            var fileName = $(this).data('file-name');
+
+            $('#fileIframe').attr('src', fileUrl);
+            $('#downloadFileLink').attr('href', fileUrl).attr('download', fileName);
+            $('#viewFileModal').modal('show');
+
+            // Ajuste da altura do iframe
+            var fileType = fileName.split('.').pop().toLowerCase();
+            var iframeHeight;
+
+            if (fileType === 'pdf') {
+                iframeHeight = '600px';
+                } else if (fileType === 'jpg' || fileType === 'jpeg' || fileType === 'png') {
+                iframeHeight = '500px';
+                } else {
+                iframeHeight = '400px';
+                }
+
+            $('#fileIframe').css('height', iframeHeight);
+            });
+        });
+    </script>
+
+    <script>
+        document.querySelectorAll('.delete-folder').forEach(button => {
+            button.addEventListener('click', function () {
+                const folderName = this.getAttribute('data-folder-id');
+
+                $.ajax({
+                    url: '/Relatorios/DeleteFolder', // Substitua pelo nome do seu controller
+                    type: 'POST',
+                    data: { folderName: folderName },
+                    success: function (response) {
+                        alert('Pasta deletada com sucesso!');
+                        location.reload(); // Recarrega a página para atualizar a lista
+                    },
+                    error: function (error) {
+                        console.error('Erro ao deletar a pasta:', error);
+                        alert('Erro ao deletar a pasta.');
+                    }
+                });
+            });
+        });
+
+        // Deletar Arquivo
+        document.querySelectorAll('.delete-file').forEach(button => {
+            button.addEventListener('click', function () {
+                const fileUrl = this.getAttribute('data-file-url');
+
+                $.ajax({
+                    url: '/Relatorios/DeleteFile', // Substitua pelo nome do seu controller
+                    type: 'POST',
+                    data: { fileUrl: fileUrl },
+                    success: function (response) {
+                        alert('Arquivo deletado com sucesso!');
+                        location.reload(); // Recarrega a página para atualizar a lista
+                    },
+                    error: function (error) {
+                        console.error('Erro ao deletar o arquivo:', error);
+                        alert('Erro ao deletar o arquivo.');
+                    }
+                });
+            });
+        });
+
     </script>
 </body>
 </html>

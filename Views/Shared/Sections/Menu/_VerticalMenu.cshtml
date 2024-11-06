@@ -4,6 +4,7 @@
 
 @{
     TempData.Keep();
+
     string? currentPage = ViewContext.HttpContext.Request.Path;
 }
 
@@ -13,9 +14,9 @@
 
     @* ! Hide app brand if navbar-full *@
     <div class='app-brand demo @((@ViewData["navbarFull"] != null && Convert.ToBoolean(@ViewData["navbarFull"])) ? "d-xl-none" : "")'>
-        <a asp-controller="Dashboards" asp-action="Dashboard" class="app-brand-link">
+        <a asp-controller="Inicio" asp-action="Inicio" class="app-brand-link">
             <span class="app-brand-logo demo me-1">
-                <img src="~/img/Logo/Logo.png" alt="Logo" style="width: 20px; height:24;"/>
+                <img src="~/img/Logo/Logo.png" alt="Logo" style="width: 20px; height:24;" />
             </span>
             <span class="app-brand-text demo menu-text fw-semibold ms-2">@TempData.Peek("appName")</span>
         </a>
@@ -30,22 +31,60 @@
     @* ! Full version menu-items *@
     <ul class="menu-inner py-1">
         <!-- Dashboards -->
-        <li class='menu-item@(currentPage.EndsWith("/") || currentPage.StartsWith("/Dashboards") || currentPage.StartsWith("/Relatorios") ? " active open" : "")'>
+        <li class='menu-item @(currentPage.EndsWith("/") ||
+                     currentPage.StartsWith("/Dashboards") ||
+                     currentPage.StartsWith("/Relatorios") ||
+                     currentPage.StartsWith("/Atestado") ||
+                     currentPage.StartsWith("/Sites") ||
+                     currentPage.StartsWith("/Inicio") ? "active open" : "")'>
+
             <a href="#" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons mdi mdi-home-outline"></i>
                 <div>Pessoal</div>
                 <div class="badge bg-danger rounded-pill ms-auto"></div>
             </a>
             <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Dashboards/Dashboard" ? " active" : "")'>
-                    <form action="/Dashboards/Dashboard" method="post" class="menu-link">
+                <li class='menu-item@(currentPage == "/Inicio/Inicio" ? " active" : "")'>
+                    <form action="/Inicio/RedirectoInicio" method="post" class="menu-link">
                         <button type="submit" style="all: unset; cursor: pointer;">
-                            <div>Inicio</div>
+                            <div>Início</div>
                             <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
                         </button>
                     </form>
                 </li>
-
+                <li class='menu-item@(currentPage == "/Dashboards/Dashboard" ? " active" : "")'>
+                    <form action="/Dashboards/Dashboard" method="post" class="menu-link">
+                        <button type="submit" style="all: unset; cursor: pointer;">
+                            <div>Dashboard</div>
+                            <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                        </button>
+                    </form>
+                </li>
+                <li class='menu-item@(currentPage == "/Sites/Sites" ? " active" : "")'>
+                    <form action="/Sites/Sites" method="post" class="menu-link">
+                        <button type="submit" style="all: unset; cursor: pointer;">
+                            <div>Sites</div>
+                            <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                        </button>
+                    </form>
+                </li>
+                <li class='menu-item@(currentPage.Contains("Settings") || currentPage.Contains("Pessoal") ? " active open" : "")'>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <div>Configurações</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class='menu-item@(currentPage == "/Dashboards/Pessoal" ? " active" : "")'>
+                            <a asp-controller="Dashboards" asp-action="Pessoal" class="menu-link">
+                                <div>Perfil</div>
+                            </a>
+                        </li>
+                        <li class='menu-item@(currentPage == "/Dashboards/Settings" ? " active" : "")'>
+                            <a asp-controller="Dashboards" asp-action="Settings" class="menu-link">
+                                <div>Conta</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li class='menu-item@(currentPage == "/Relatorios/Relatorios" ? " active" : "")'>
                     <form action="/Relatorios/RedirecToRelatorios" method="post" class="menu-link">
                         <button type="submit" style="all: unset; cursor: pointer;">
@@ -59,6 +98,15 @@
                     <form action="/Dashboards/RedirecToRequisicoes" method="post" class="menu-link">
                         <button type="submit" style="all: unset; cursor: pointer;">
                             <div>Requisições</div>
+                            <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                        </button>
+                    </form>
+                </li>
+
+                <li class='menu-item@(currentPage == "/Atestado/Atestado" ? " active" : "")'>
+                    <form action="/Atestado/Atestado" method="post" class="menu-link">
+                        <button type="submit" style="all: unset; cursor: pointer;">
+                            <div>Atest. Med</div>
                             <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
                         </button>
                     </form>
@@ -84,116 +132,79 @@
             </ul>
         </li>
 
+        
         @{
+
             switch (Model.funcionario.Permissao)
             {
+
                 case TipoPermissaoEnum.Analista_De_Sistemas:
-                    <li class="menu-header fw-medium mt-4">
-                        <span class="menu-header-text">Operações de Rede (NOC)</span>
-                        <style>
-                            .menu-header .menu-header-text {
-                                color: #000000;
-                            }
-                        </style>
-                    </li>
-
-                    <li class='menu-item@(currentPage == "/Document/Document" ? " active" : "")'>
-                        <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
-                            <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
-                                <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
-                                <div style="flex-grow: 1;">Documentação</div>
-                                <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
-                            </button>
-                        </form>
-                    </li>
-
-                    <li class='menu-item@(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                        <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
-                            <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
-                                <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
-                                <div style="flex-grow: 1;">Tutoriais</div>
-                                <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
-                            </button>
-                        </form>
-                    </li>
-
-                    <!-- Pages -->
-                    <li class='menu-item@(currentPage.StartsWith("/Pages") ? " active open" : "")'>
+                    <li class='menu-item @(currentPage.EndsWith("/") ||
+             currentPage.StartsWith("/Document") ||
+             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons mdi mdi-account-outline"></i>
-                            <div>Account Settings</div>
+                            <i class="menu-icon tf-icons mdi mdi-server"></i>
+                            <div>NOC</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettings" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettings" class="menu-link">
-                                    <div>Account</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Documentação</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettingsNotifications" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettingsNotifications" class="menu-link">
-                                    <div>Notifications</div>
-                                </a>
-                            </li>
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettingsConnections" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettingsConnections" class="menu-link">
-                                    <div>Connections</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Tutoriais</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </li>
                     break;
 
                 case TipoPermissaoEnum.Financeiro:
-                    <li class="menu-header fw-medium mt-4">
-                        <span class="menu-header-text">Financeiro</span>
-                        <style>
-                            .menu-header .menu-header-text {
-                                color: #000000;
-                            }
-                        </style>
-                    </li>
-
-                    <li class='menu-item@(currentPage == "/Document/Document" ? " active" : "")'>
-                        <form action="/Tutorial/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
-                            <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
-                                <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
-                                <div style="flex-grow: 1;">Documentação</div>
-                                <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
-                            </button>
-                        </form>
-                    </li>
-
-                    <li class='menu-item@(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                        <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
-                            <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
-                                <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
-                                <div style="flex-grow: 1;">Tutoriais</div>
-                                <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
-                            </button>
-                        </form>
-                    </li>
-
-                    <!-- Pages -->
-                    <li class='menu-item@(currentPage.StartsWith("/Pages") ? " active open" : "")'>
+                    <li class='menu-item @(currentPage.EndsWith("/") ||
+             currentPage.StartsWith("/Financeiro") ||
+             currentPage.StartsWith("/Document") ||
+             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons mdi mdi-account-outline"></i>
-                            <div>Account Settings</div>
+                            <i class="menu-icon tf-icons mdi mdi-wallet"></i>
+                            <div>Financeiro</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettings" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettings" class="menu-link">
-                                    <div>Account</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Financeiro/RegistroT" ? " active" : "")'>
+                                <form action="/Financeiro/RegistroT" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-file-document-outline"></i>
+                                        <div style="flex-grow: 1;">Relat. Comp</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettingsNotifications" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettingsNotifications" class="menu-link">
-                                    <div>Notifications</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Documentação</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettingsConnections" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettingsConnections" class="menu-link">
-                                    <div>Connections</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Tutoriais</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </li>
@@ -202,61 +213,173 @@
                 case TipoPermissaoEnum.Suporte_Técnico:
                     <li class="menu-header fw-medium mt-4">
                         <span class="menu-header-text">Suporte Técnico</span>
-                        <style>
-                            .menu-header .menu-header-text {
-                                color: #000000;
-                            }
-                        </style>
                     </li>
-
-                    <li class='menu-item@(currentPage == "/Relatorios/Relatorios" ? " active" : "")'>
-                        <form action="/Tutorial/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                    <li class='menu-item @(currentPage == "/Relatorios/Relatorios" ? " active" : "")'>
+                        <form action="/Relatorios/Relatorios" method="post" class="menu-link" style="display: flex; align-items: center;">
                             <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                 <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
-                                <div style="flex-grow: 1;">Relátorios</div>
+                                <div style="flex-grow: 1;">Relatórios</div>
                                 <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
                             </button>
                         </form>
                     </li>
-
-                    <li class='menu-item@(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                    <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
                         <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
                             <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
-                                <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                <i class="menu-icon tf-icons mdi mdi-school"></i>
                                 <div style="flex-grow: 1;">Tutoriais</div>
                                 <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
                             </button>
                         </form>
                     </li>
+                    break;
 
-                    <!-- Pages -->
-                    <li class='menu-item@(currentPage.StartsWith("/Pages") ? " active open" : "")'>
+                case TipoPermissaoEnum.Administrador:
+                    <li class='menu-item @(currentPage.EndsWith("/") ||
+             currentPage.StartsWith("/FeriasAdmin") ||
+             currentPage.StartsWith("/Document") ||
+             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
-                            <i class="menu-icon tf-icons mdi mdi-account-outline"></i>
-                            <div>Account Settings</div>
+                            <i class="menu-icon tf-icons mdi mdi-briefcase"></i>
+                            <div>Recursos Humanos</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettings" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettings" class="menu-link">
-                                    <div>Account</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/FeriasAdmin/Index" ? " active" : "")'>
+                                <form action="/FeriasAdmin/Index" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-beach"></i>
+                                        <div style="flex-grow: 1;">Gestão de Férias</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettingsNotifications" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettingsNotifications" class="menu-link">
-                                    <div>Notifications</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Documentação</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
-                            <li class='menu-item@(currentPage == "/Pages/AccountSettingsConnections" ? " active" : "")'>
-                                <a asp-controller="Pages" asp-action="AccountSettingsConnections" class="menu-link">
-                                    <div>Connections</div>
-                                </a>
+                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Tutoriais</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class='menu-item @(currentPage.EndsWith("/") ||
+             currentPage.StartsWith("/Financeiro") ||
+             currentPage.StartsWith("/Document") ||
+             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons mdi mdi-wallet"></i>
+                            <div>Financeiro</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class='menu-item @(currentPage == "/Financeiro/RegistroT" ? " active" : "")'>
+                                <form action="/Financeiro/RegistroT" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-file-document-outline"></i>
+                                        <div style="flex-grow: 1;">Relat. Comp</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Documentação</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Tutoriais</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class='menu-item @(currentPage.EndsWith("/") ||
+             currentPage.StartsWith("/Document") ||
+             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons mdi mdi-server"></i>
+                            <div>NOC</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Documentação</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Tutoriais</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </li>
                     break;
+
+                case TipoPermissaoEnum.Tecnico:
+
+                case TipoPermissaoEnum.Auxiliar_Tecnico:
+
+                case TipoPermissaoEnum.Tecnico_CFTV:
+
+                case TipoPermissaoEnum.AuxiliarTCFTV:
+                    <li class='menu-item @(currentPage.EndsWith("/") ||
+             currentPage.StartsWith("/Document") ||
+             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i class="menu-icon tf-icons mdi mdi-camera"></i>
+                            <div>CFTV</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Documentação</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
+                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                                    <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                                        <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                                        <div style="flex-grow: 1;">Tutoriais</div>
+                                        <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    break;
+
             }
         }
-
 
         <li class='menu-item@(currentPage.StartsWith("/Chat") ? " active open" : "")'>
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -265,257 +388,33 @@
             </a>
             <ul class="menu-sub">
                 <li class='menu-item@(currentPage == "/Chat/Chat" ? " active" : "")'>
-                    <a asp-controller="Chat" asp-action="Chat" class="menu-link" target="_blank">
-                        <div>Chat</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Auth/RegisterBasic" ? " active" : "")'>
-                    <a asp-controller="Auth" asp-action="RegisterBasic" class="menu-link" target="_blank">
-                        <div>Register</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Auth/ForgotPasswordBasic" ? " active" : "")'>
-                    <a asp-controller="Auth" asp-action="ForgotPasswordBasic" class="menu-link" target="_blank">
-                        <div>Forgot Password</div>
-                    </a>
+                    <form action="/Chat/Chat" method="post" class="menu-link" style="display: flex; align-items: center;">
+                        <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                            <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                            <div style="flex-grow: 1;">Chat</div>
+                            <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </li>
-        <li class='menu-item@(currentPage.StartsWith("/Pages/Misc") ? " active open" : "")'>
+
+        <li class='menu-item@(currentPage.StartsWith("/Ramais") ? " active open" : "")'>
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons mdi mdi-cube-outline"></i>
-                <div>Misc</div>
+                <i class="menu-icon tf-icons mdi mdi-phone"></i>
+                <div>Telefonia</div>
             </a>
             <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Pages/MiscError" ? " active" : "")'>
-                    <a asp-controller="Pages" asp-action="MiscError" class="menu-link" target="_blank">
-                        <div>Error</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Pages/MiscUnderMaintenance" ? " active" : "")'>
-                    <a asp-controller="Pages" asp-action="MiscUnderMaintenance" class="menu-link" target="_blank">
-                        <div>Under Maintenance</div>
-                    </a>
+                <li class='menu-item@(currentPage == "/Ramais/Ramais" ? " active" : "")'>
+                    <form action="/Ramais/Ramais" method="post" class="menu-link" style="display: flex; align-items: center;">
+                        <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
+                            <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
+                            <div style="flex-grow: 1;">Ramais</div>
+                            <div class="badge bg-label-primary fs-tiny rounded-pill ms-auto"></div>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </li>
-        <!-- Components -->
-        <li class="menu-header fw-medium mt-4"><span class="menu-header-text">Components</span></li>
-        <!-- Cards -->
-        <li class='menu-item@(currentPage == "/Cards/Basic" ? " active" : "")'>
-            <a asp-controller="Cards" asp-action="Basic" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-credit-card-outline"></i>
-                <div>Cards</div>
-            </a>
-        </li>
-        <!-- User interface -->
-        <li class='menu-item@(currentPage.StartsWith("/Ui") ? " active open" : "")'>
-            <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons mdi mdi-archive-outline"></i>
-                <div>User interface</div>
-            </a>
-            <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Ui/Accordion" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Accordion" class="menu-link">
-                        <div>Accordion</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Alerts" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Alerts" class="menu-link">
-                        <div>Alerts</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Badges" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Badges" class="menu-link">
-                        <div>Badges</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Buttons" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Buttons" class="menu-link">
-                        <div>Buttons</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Carousel" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Carousel" class="menu-link">
-                        <div>Carousel</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Collapse" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Collapse" class="menu-link">
-                        <div>Collapse</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Dropdowns" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Dropdowns" class="menu-link">
-                        <div>Dropdowns</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Footer" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Footer" class="menu-link">
-                        <div>Footer</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/ListGroups" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="ListGroups" class="menu-link">
-                        <div>List groups</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Modals" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Modals" class="menu-link">
-                        <div>Modals</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Navbar" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Navbar" class="menu-link">
-                        <div>Navbar</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Offcanvas" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Offcanvas" class="menu-link">
-                        <div>Offcanvas</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/PaginationBreadcrumbs" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="PaginationBreadcrumbs" class="menu-link">
-                        <div>Pagination &amp; Breadcrumbs</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Progress" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Progress" class="menu-link">
-                        <div>Progress</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Spinners" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Spinners" class="menu-link">
-                        <div>Spinners</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/TabsPills" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="TabsPills" class="menu-link">
-                        <div>Tabs &amp; Pills</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Toasts" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Toasts" class="menu-link">
-                        <div>Toasts</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/TooltipsPopovers" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="TooltipsPopovers" class="menu-link">
-                        <div>Tooltips &amp; popovers</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Ui/Typography" ? " active" : "")'>
-                    <a asp-controller="Ui" asp-action="Typography" class="menu-link">
-                        <div>Typography</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Extended components -->
-        <li class='menu-item@(currentPage.StartsWith("/ExtendedUi") ? " active open" : "")'>
-            <a href="javascript:void(0)" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons mdi mdi-star-outline"></i>
-                <div>Extended UI</div>
-            </a>
-            <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/ExtendedUi/PerfectScrollbar" ? " active" : "")'>
-                    <a asp-controller="ExtendedUi" asp-action="PerfectScrollbar" class="menu-link">
-                        <div>Perfect scrollbar</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/ExtendedUi/TextDivider" ? " active" : "")'>
-                    <a asp-controller="ExtendedUi" asp-action="TextDivider" class="menu-link">
-                        <div>Text Divider</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-        <!-- Icons -->
-        <li class='menu-item@(currentPage == "/Icons/MdiIcons" ? " active" : "")'>
-            <a asp-controller="Icons" asp-action="MdiIcons" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-google-circles-extended"></i>
-                <div>Icons</div>
-            </a>
-        </li>
-
-        <!-- Forms & Tables -->
-        <li class="menu-header fw-medium mt-4"><span class="menu-header-text">Forms &amp; Tables</span></li>
-        <!-- Forms -->
-        <li class='menu-item@(currentPage.StartsWith("/Forms") ? " active open" : "")'>
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons mdi mdi-form-select"></i>
-                <div>Form Elements</div>
-            </a>
-            <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Forms/BasicInputs" ? " active" : "")'>
-                    <a asp-controller="Forms" asp-action="BasicInputs" class="menu-link">
-                        <div>Basic Inputs</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Forms/InputGroups" ? " active" : "")'>
-                    <a asp-controller="Forms" asp-action="InputGroups" class="menu-link">
-                        <div>Input groups</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li class='menu-item@(currentPage.StartsWith("/FormLayouts") ? " active open" : "")'>
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons mdi mdi-cube-outline"></i>
-                <div>Form Layouts</div>
-            </a>
-            <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/FormLayouts/Vertical" ? " active" : "")'>
-                    <a asp-controller="FormLayouts" asp-action="Vertical" class="menu-link">
-                        <div>Vertical Form</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/FormLayouts/Horizontal" ? " active" : "")'>
-                    <a asp-controller="FormLayouts" asp-action="Horizontal" class="menu-link">
-                        <div>Horizontal Form</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <!-- Form Validation -->
-        <li class='menu-item@(currentPage == "/FormValidation/Validation" ? " active" : "")'>
-            <a href="https://demos.themeselection.com/materio-aspnet-core-mvc-admin-template/html/vertical-menu-template/form-validation.html" target="_blank" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-checkbox-marked-circle-outline"></i>
-                <div>Form Validation</div><div class="badge bg-label-primary fs-tiny rounded-pill ms-auto">Pro</div>
-            </a>
-        </li>
-        <!-- Tables -->
-        <li class='menu-item@(currentPage == "/Tables/Basic" ? " active" : "")'>
-            <a asp-controller="Tables" asp-action="Basic" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-table"></i>
-                <div>Tables</div>
-            </a>
-        </li>
-        <!-- Data Tables -->
-        <li class='menu-item@(currentPage.StartsWith("/Tables/DataTables") ? " active open" : "")'>
-            <a href="https://demos.themeselection.com/materio-aspnet-core-mvc-admin-template/html/vertical-menu-template/tables-datatables-basic.html" target="_blank" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-grid"></i>
-                <div>Datatables</div><div class="badge bg-label-primary fs-tiny rounded-pill ms-auto">Pro</div>
-            </a>
-        </li>
-        <!-- Misc -->
-        <li class="menu-header fw-medium mt-4"><span class="menu-header-text">Misc</span></li>
-        <li class="menu-item">
-            <a href='@TempData.Peek("support")' target="_blank" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-lifebuoy"></i>
-                <div>Support</div>
-            </a>
-        </li>
-        <li class="menu-item">
-            <a href='@TempData.Peek("documentation")' target="_blank" class="menu-link">
-                <i class="menu-icon tf-icons mdi mdi-file-document-multiple-outline"></i>
-                <div>Documentation</div>
-            </a>
-        </li>
-    </ul>
-
 </aside>
 <!-- / Menu -->

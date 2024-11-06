@@ -9,6 +9,7 @@ namespace AspnetCoreMvcFull.Models
     public TipoStatusEnum Status { get; set; }
     public Guid FuncionarioId { get; set; }
     public TipoPermissaoEnum Setor { get; set; }
+       
     public string RequisitanteNome { get; set; }
     public Guid RequisitanteId { get; set; }
     public DateTime? DataInicio { get; set; }

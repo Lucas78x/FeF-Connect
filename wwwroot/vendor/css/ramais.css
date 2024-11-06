@@ -1,0 +1,142 @@
+/* Corpo */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #e9f1f5; /* Tom suave de azul claro */
+  margin: 0;
+  padding: 20px;
+  transition: background-color 0.5s ease;
+}
+
+/* Container */
+.container {
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Sombra suave */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Cabeçalho */
+h1 {
+  text-align: center;
+  color: #3a4750; /* Tom escuro para o texto */
+  margin-bottom: 40px;
+  font-size: 3em;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1); /* Sombra de texto menos intensa */
+  animation: fadeInDown 1s ease;
+}
+
+/* Setores */
+.setores-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.setor {
+  background: #f2f3f5; /* Fundo claro e neutro */
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Sombra leve */
+  transition: box-shadow 0.4s, transform 0.4s;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s forwards ease;
+}
+
+  .setor h2 {
+    color: #2c3e50; /* Tom escuro e moderno */
+    margin-bottom: 15px;
+    font-size: 22px;
+    border-bottom: 2px solid #2c3e50; /* Linha de separação escura */
+    padding-bottom: 5px;
+  }
+
+/* Ramal */
+.ramal-list {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f9fbfd; /* Fundo mais claro e moderno */
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Sombra leve */
+}
+
+.ramal {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #388e3c; /* Verde forte */
+  transition: background 0.3s, transform 0.4s;
+  cursor: pointer;
+}
+
+  .ramal:hover {
+    transform: scale(1.05);
+    background: #4caf50; /* Verde claro ao passar o mouse */
+  }
+
+.icon {
+  margin-right: 15px;
+  color: #ffffff; /* Ícones brancos para contraste */
+  font-size: 28px;
+}
+
+.info {
+  flex-grow: 1;
+}
+
+  .info p {
+    margin: 0;
+    font-size: 16px;
+    color: #ffffff; /* Texto branco para legibilidade */
+  }
+
+  .info strong {
+    font-size: 18px;
+    color: #ffffff; /* Texto em negrito branco */
+  }
+
+/* Scrollbar estilizado */
+.ramal-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ramal-list::-webkit-scrollbar-thumb {
+  background: #3a4750; /* Tom escuro neutro */
+  border-radius: 4px;
+}
+
+.ramal-list::-webkit-scrollbar-track {
+  background: #f2f3f5; /* Fundo claro */
+}
+
+/* Animações */
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

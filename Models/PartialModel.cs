@@ -11,6 +11,15 @@ namespace AspnetCoreMvcFull.Models
     public List<FolderViewModel> Folders { get; set; }
     public List<RequisicoesModel> Requisicoes { get; set; }
     public FuncionarioModel funcionario { get; set; }
+    public List<AtestadoModel> Atestados { get; set; }
+    public List<FeriasModel> Ferias { get; set; }
+    public List<RamaisModel> Ramais { get; set; }
+    public ForecastModel Forecast { get; set; }
+    public List<EventoModel> Eventos { get; set; }
+    public DicasModel Dica { get; set; }
+    public List<NoticiasModel> Noticias { get; set; }
+    public List<ComunicadosModel> Comunicados { get; set; }
+    public LinksModel Links { get; set; }
     public bool AdminUser(TipoPermissaoEnum permissao)
     {
       switch (permissao)
@@ -21,8 +30,7 @@ namespace AspnetCoreMvcFull.Models
         case TipoPermissaoEnum.Gerente_Comercial:
         case TipoPermissaoEnum.SupervisorA:
         case TipoPermissaoEnum.SupervisorO:
-        case TipoPermissaoEnum.SupervisorC:
-        case TipoPermissaoEnum.Analista_De_Sistemas:
+        case TipoPermissaoEnum.SupervisorC:       
           return true;
         case TipoPermissaoEnum.Suporte_Técnico:
         case TipoPermissaoEnum.Financeiro:
@@ -31,6 +39,7 @@ namespace AspnetCoreMvcFull.Models
         case TipoPermissaoEnum.Auxiliar_Tecnico:
         case TipoPermissaoEnum.Tecnico_CFTV:
         case TipoPermissaoEnum.AuxiliarTCFTV:
+        case TipoPermissaoEnum.Analista_De_Sistemas:
           return false;
       }
 

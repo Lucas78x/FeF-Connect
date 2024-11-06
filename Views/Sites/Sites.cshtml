@@ -1,0 +1,158 @@
+@using AspnetCoreMvcFull.Models;
+@model PartialModel
+
+@{
+    ViewData["Title"] = "Portal de Links";
+    var links = Model.Links.Links;
+    var categories = Model.Links.Links.Keys.ToList();
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/vendor/css/sites.css">
+}
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Portal de Links</h1>
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#addLinkModal">Adicionar Link</button>
+        </div>
+
+        <div class="row">
+            @foreach (var category in links)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="link-category p-3 border">
+                        <h5>@category.Key</h5>
+                        <ul class="list-unstyled">
+                            @if (category.Value.Any())
+                            {
+                                foreach (var link in category.Value)
+                                {
+                                    <li class="link-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <a href="@link.Url" target="_blank">@link.Nome</a>
+                                        </div>
+                                    </li>
+                                }
+                            }
+                            else
+                            {
+                                <p>Nenhum link encontrado.</p>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Link -->
+    <div class="modal fade" id="addLinkModal" tabindex="-1" role="dialog" aria-labelledby="addLinkModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addLinkModalLabel">Adicionar Novo Link</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form asp-action="AddLink" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="linkName">Nome do Link</label>
+                            <input type="text" class="form-control" id="linkName" name="linkName" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="linkUrl">URL</label>
+                            <input type="url" class="form-control" id="linkUrl" name="linkUrl" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="linkDescription">Descrição</label>
+                            <textarea class="form-control" id="linkDescription" name="linkDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="linkCategory">Categoria</label>
+                            <select class="form-control" id="linkCategory" name="linkCategory" required>
+                                <option value="">Selecionar Categoria</option>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                                <option value="nova">Adicionar Nova Categoria</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="newCategoryGroup" style="display: none;">
+                            <label for="newCategoryName">Nova Categoria</label>
+                            <input type="text" class="form-control" id="newCategoryName" name="newCategoryName" />
+                        </div>
+                        <div class="error-message">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Configuração do modal para adicionar link
+            $('#addLinkModal').on('show.bs.modal', function (event) {
+                var modal = $(this);
+                modal.find('.modal-body #linkName').val('');
+                modal.find('.modal-body #linkUrl').val('');
+                modal.find('.modal-body #linkDescription').val('');
+                modal.find('.modal-body #linkCategory').val('');
+                modal.find('#newCategoryGroup').hide();
+            });
+
+            $('#linkCategory').change(function () {
+                if ($(this).val() === 'nova') {
+                    $('#newCategoryGroup').show();
+                } else {
+                    $('#newCategoryGroup').hide();
+                }
+            });
+
+            // Evento para enviar o formulário de adicionar link
+            $('#addLinkModal form').on('submit', function (event) {
+                event.preventDefault(); // Previne o envio do formulário padrão
+
+                var formData = $(this).serialize(); // Serializa os dados do formulário
+
+                $.ajax({
+                    url: '@Url.Action("AddLink", "Sites")', // Ajuste para o endpoint de adicionar link
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload(); // Recarrega a página para atualizar a lista de links
+                        } else {
+                            alert('Erro ao adicionar o link.');
+                        }
+                    },
+                    error: function () {
+                        alert('Falha ao adicionar o link.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

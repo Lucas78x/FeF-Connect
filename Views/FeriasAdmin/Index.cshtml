@@ -1,0 +1,348 @@
+@using AspnetCoreMvcFull.Models;
+@model PartialModel
+@{
+    ViewData["Title"] = "Gerenciamento de Férias";
+
+    var funcionariosDict = Model.Funcionarios.ToDictionary(f => f.Id);
+    foreach (var ferias in Model.Ferias)
+    {
+        if (funcionariosDict.TryGetValue(ferias.OwnerId, out var funcionario))
+        {
+            ferias.SetNomeFuncionario($"{funcionario.Nome} {funcionario.Sobrenome}");
+        }
+    }
+
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/apex-charts/apex-charts.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="~/vendor/css/feriasadmin.css">
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4 section-title">Gerenciamento de Férias</h2>
+
+    <!-- Botão Adicionar Férias -->
+    <div class="d-flex justify-content-center mb-3">
+        <button class="btn btn-success btn-add" onclick="openModal('new')">
+            <i class="fas fa-plus"></i> Adicionar Férias
+        </button>
+    </div>
+
+    <!-- Campo de filtro -->
+    <input type="text" id="searchInput" class="form-control mx-auto" placeholder="Filtrar por nome...">
+
+    <div class="card-container" id="vacationCards">
+        @if (Model != null && Model.Ferias.Any())
+        {
+            @foreach (var ferias in Model.Ferias)
+            {
+                var funcionario = Model.Funcionarios.FirstOrDefault(f => f.Id == ferias.OwnerId);
+                if (funcionario != null)
+                {
+
+                    <div class="card shadow-sm custom-card mb-3 vacation-card" data-name="@funcionario.Nome @funcionario.Sobrenome" data-id="@funcionario.Id" data-ferias-id="@ferias.Id">
+                        <div class="card-body">
+                            <h4 class="card-title"> Nome: @funcionario.Nome @funcionario.Sobrenome</h4>
+                            <p><i class="fas fa-calendar-alt"></i><strong> Data de Início:</strong> @ferias.DataInicio.ToString("dd/MM/yyyy")</p>
+                            <p><i class="fas fa-calendar-check"></i><strong> Data de Fim:</strong> @ferias.DataFim.ToString("dd/MM/yyyy")</p>
+                            <p><i class="fas fa-sticky-note"></i><strong> Observações:</strong> @ferias.Observacoes</p>
+                            <div class="action-icons text-end">
+                                <a href="javascript:void(0);" class="text-primary" onclick="openModal('edit', @ferias.Id)">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="javascript:void(0);" class="text-danger" onclick="deleteVacation(@ferias.Id)">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+        }
+        else
+        {
+            <div class="text-center mt-5">
+                <p><i class="fas fa-exclamation-circle"></i> Nenhuma férias registrada para visualização.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="feriasModal" tabindex="-1" aria-labelledby="feriasModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feriasModalLabel">Adicionar ou Editar Férias</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <form id="vacationForm">
+                    <div class="mb-3">
+                        <label for="nomeFuncionario" class="form-label">Nome do Funcionário</label>
+                        <select class="form-control" id="nomeFuncionario" required>
+                            @if (Model != null)
+                            {
+                                @foreach (var funcionario in Model.Funcionarios)
+                                {
+                                    <option value="@funcionario.Id" data-id="@funcionario.Id">
+                                        @funcionario.Nome @funcionario.Sobrenome
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dataInicio" class="form-label">Data de Início</label>
+                        <input type="date" class="form-control" id="dataInicio" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dataFim" class="form-label">Data de Fim</label>
+                        <input type="date" class="form-control" id="dataFim" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let vacationData = @Html.Raw(Json.Serialize(Model.Ferias));
+
+    function formatDate(dateString) {
+        const parts = dateString.split('/');
+        return `${parts[1]}/${parts[0]}/${parts[2]}`; 
+    }
+
+    function formatDateToISO(date) {
+        return date + "T00:00:00";
+    }
+
+    function openModal(mode, id = null) {
+        const modalLabel = document.getElementById('feriasModalLabel');
+        const form = document.getElementById('vacationForm');
+
+        if (mode === 'edit') {
+            const card = document.querySelector(`.vacation-card[data-ferias-id='${id}']`);
+            const funcionarioId = card.getAttribute('data-id'); // Ensure this attribute exists in your card
+            const nome = card.getAttribute('data-name');
+            const start = card.querySelector('p:nth-of-type(1) strong').nextSibling.nodeValue.trim();
+            const end = card.querySelector('p:nth-of-type(2) strong').nextSibling.nodeValue.trim();
+            const obs = card.querySelector('p:nth-of-type(3) strong').nextSibling.nodeValue.trim();
+
+            // Formata as datas
+            const formattedStart = formatDate(start);
+            const formattedEnd = formatDate(end);
+
+            console.log('Data de Início:', formattedStart);
+            console.log('Data de Fim:', formattedEnd);
+
+            // Atribui os valores aos campos do formulário
+            document.getElementById('nomeFuncionario').value = nome; // Certifique-se de que a variável 'nome' está definida
+            document.getElementById('dataInicio').value = formattedStart;
+            document.getElementById('dataFim').value = formattedEnd;
+            document.getElementById('observacoes').value = obs;
+            document.getElementById('observacoes').value = obs;
+
+            const nomeFuncionarioSelect = document.getElementById('nomeFuncionario');
+            nomeFuncionarioSelect.value = funcionarioId;
+            nomeFuncionarioSelect.setAttribute('data-id', funcionarioId);
+
+            const event = new Event('change', {
+                bubbles: true,
+                cancelable: true,
+            });
+            nomeFuncionarioSelect.dispatchEvent(event);
+
+            modalLabel.innerText = 'Editar Férias';
+            form.onsubmit = (event) => {
+                event.preventDefault();
+                updateVacation(id);
+                modal.hide();
+            };
+        } else {
+            // Reset form for new entry
+            form.reset();
+            modalLabel.innerText = 'Adicionar Férias';
+            form.onsubmit = (event) => {
+                event.preventDefault();
+                addVacation();
+                modal.hide();
+            };
+        }
+
+        var modal = new bootstrap.Modal(document.getElementById('feriasModal'));
+        modal.show();
+    }
+
+    function addVacation() {
+        const selectElement = document.getElementById('nomeFuncionario');
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+
+        const newVacation = {
+            nomeFuncionario: selectedOption.text,
+            dataInicio: document.getElementById('dataInicio').value,
+            dataFim: document.getElementById('dataFim').value,
+            observacoes: document.getElementById('observacoes').value,
+            ownerId: selectedOption.getAttribute('data-id')
+        };
+
+        console.log('Current Data:', newVacation);
+
+        $.ajax({
+            type: "POST",
+            url: "/FeriasAdmin/AddVacation", 
+            data: JSON.stringify(newVacation),
+            contentType: "application/json",
+            success: function (response) {
+                const formattedDataInicio = formatDateToISO(newVacation.dataInicio);
+                const formattedDataFim = formatDateToISO(newVacation.dataFim);
+
+                console.log('Inicio:', formattedDataInicio);
+                console.log('Fim:', formattedDataFim);
+
+                vacationData.push({
+                    id: response.id,
+                    nomeFuncionario: newVacation.nomeFuncionario,
+                    dataInicio: formattedDataInicio,
+                    dataFim: formattedDataFim,
+                    observacoes: newVacation.observacoes,
+                    ownerId: newVacation.ownerId
+                });
+
+                console.log('UpdateVacation', vacationData);
+
+                renderVacations();
+            },
+            error: function () {
+                alert('Erro ao adicionar férias.');
+            }
+        });
+    }
+
+    function updateVacation(id) {
+        const updatedVacation = {
+            Id: id,
+            NomeFuncionario: document.getElementById('nomeFuncionario').value,
+            DataInicio: document.getElementById('dataInicio').value,
+            DataFim: document.getElementById('dataFim').value,
+            Observacoes: document.getElementById('observacoes').value,
+            ownerId: document.getElementById('nomeFuncionario').getAttribute('data-id')
+        };
+        console.log('Current vacationData:', updatedVacation);
+
+        $.ajax({
+            type: "PUT",
+            url: "/FeriasAdmin/UpdateVacation/" + id,
+            data: JSON.stringify(updatedVacation),
+            contentType: "application/json",
+            success: function (response) {
+                // Ensure the server response is what you expect
+                console.log('Update successful:', response);
+                const index = vacationData.findIndex(v => v.id == id);
+                console.log('Passed ID:', id);
+                console.log('Current vacationData:', vacationData);
+
+                if (index > -1) {
+                    vacationData[index].nomeFuncionario = updatedVacation.NomeFuncionario;
+                    vacationData[index].dataInicio = updatedVacation.DataInicio;
+                    vacationData[index].dataFim = updatedVacation.DataFim;
+                    vacationData[index].observacoes = updatedVacation.Observacoes;
+                    console.log('Current Data:', vacationData[index]);
+
+                    renderVacations(); //
+                }
+            },
+            error: function () {
+                alert('Erro ao atualizar férias.');
+            }
+        });
+    }
+
+    function deleteVacation(id) {
+        $.ajax({
+            type: "DELETE",
+            url: "/FeriasAdmin/DeleteVacation/" + id, // Altere para a sua rota
+            success: function () {
+                vacationData = vacationData.filter(v => v.id != id);
+                renderVacations();
+            },
+            error: function () {
+                alert('Erro ao excluir férias.');
+            }
+        });
+    }
+
+    function formatDateWithoutTimezone(dateString) {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return 'Data não disponível'; // Handle invalid date
+        }
+        return date.toLocaleDateString('pt-BR'); 
+    }
+
+
+    function renderVacations() {
+        const cardsContainer = document.getElementById('vacationCards');
+        cardsContainer.innerHTML = '';
+        vacationData.forEach(vacation => {
+            const card = document.createElement('div');
+            card.className = 'card shadow-sm custom-card mb-3 vacation-card';
+            card.setAttribute('data-name', vacation.nomeFuncionario);
+            card.setAttribute('data-id', vacation.id);
+            card.setAttribute('data-obs', vacation.observacoes);
+            card.setAttribute('data-start', vacation.dataInicio);
+            card.setAttribute('data-end', vacation.dataFim);
+
+            card.innerHTML = `
+                        <div class="card-body">
+                            <h4 class="card-title">Nome: ${vacation.nomeFuncionario}</h4>
+                            <p><i class="fas fa-calendar-alt"></i> <strong>Data de Início:</strong>
+                            ${vacation.dataInicio ? formatDateWithoutTimezone(vacation.dataInicio) : 'Data não disponível'}</p>
+                            <p><i class="fas fa-calendar-check"></i> <strong>Data de Fim:</strong>
+                            ${vacation.dataFim ? formatDateWithoutTimezone(vacation.dataFim) : 'Data não disponível'}</p>
+                            <p><i class="fas fa-sticky-note"></i> <strong>Observações:</strong> ${vacation.observacoes}</p>
+                            <div class="action-icons text-end">
+                                <a href="javascript:void(0);" class="text-primary" onclick="openModal('edit', ${vacation.id})">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="javascript:void(0);" class="text-danger" onclick="deleteVacation(${vacation.id})">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </div>
+                        </div>
+                    `;
+            cardsContainer.appendChild(card);
+        });
+    }
+
+
+
+    // Search Functionality
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const searchValue = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.vacation-card');
+
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name').toLowerCase();
+            if (name.includes(searchValue)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+</script>
+

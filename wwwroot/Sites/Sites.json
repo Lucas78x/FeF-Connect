@@ -1,0 +1,75 @@
+{
+  "Links": {
+    "IXC": [
+      {
+        "Nome": "Pagina Inicial",
+        "Url": "https://central.ffcomunicacoes.net.br/login.php",
+        "Descricao": "Pagina inicial do IXC"
+      },
+      {
+        "Nome": "Documentacao",
+        "Url": "https://wiki.ixcsoft.com.br/pt-br/home",
+        "Descricao": "Documentacao oficial do IXC"
+      }
+    ],
+    "Opa Suite": [
+      {
+        "Nome": "Pagina Inicial",
+        "Url": "https://opa.ffcomunicacoes.net.br",
+        "Descricao": "Painel de controle do Opa Suite"
+      },
+      {
+        "Nome": "API",
+        "Url": "https://api.opasuite.com.br",
+        "Descricao": "Pagina de suporte do Opa Suite"
+      }
+    ],
+    "Webmail": [
+      {
+        "Nome": "Acesso ao Webmail",
+        "Url": "https://mail.ff.tv.br",
+        "Descricao": "Acesse seu e-mail corporativo"
+      }
+    ],
+    "Telefonia": [
+      {
+        "Nome": "Issabel Grupo FeF",
+        "Url": "https://45.187.55.242",
+        "Descricao": "Acesso ao sistema de telefonia"
+      }
+    ],
+    "Automacao": [
+      {
+        "Nome": "Plataforma de Automacao",
+        "Url": "https://automacao.ffcomunicacoes.net.br",
+        "Descricao": "Sistema de automacao de processos"
+      }
+    ],
+    "CFTV": [
+      {
+        "Nome": "Monitoramento CFTV",
+        "Url": "https://cftv.ffcomunicacoes.net.br",
+        "Descricao": "Acesso ao sistema de monitoramento"
+      }
+    ],
+    "Analise": [
+      {
+        "Nome": "Fiberhome UNM2000",
+        "Url": "http://172.16.22.254:8080/webstart",
+        "Descricao": "Link para download do UNM2000"
+      },
+      {
+        "Nome": "Mikrotik WinBox",
+        "Url": "https://download.mikrotik.com/routeros/winbox/3.41/winbox64.exe",
+        "Descricao": ""
+      }
+    ],
+    "Teste": [
+      {
+        "Nome": "Teste",
+        "Url": "https:\\\\teste.com.br",
+        "Descricao": null
+      }
+    ]
+  }
+}

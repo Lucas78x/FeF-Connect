@@ -1,12 +1,23 @@
 using AspnetCoreMvcFull.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.ConstrainedExecution;
 
 namespace AspnetCoreMvcFull.Utils
 {
   public interface IValidateSession
   {
     bool IsUserValid();
+    bool HasAdministrator(TipoPermissaoEnum permissão);
+    bool HasFinanceiro(TipoPermissaoEnum permissão);
+    bool HasAnalista(TipoPermissaoEnum permissão);
+    bool HasSuporte(TipoPermissaoEnum permissão);
+    bool HasComercial(TipoPermissaoEnum permissão);
+    bool HasGerenteOperacional(TipoPermissaoEnum permissão);
+    bool HasGerenteComercial(TipoPermissaoEnum permissão);
+    bool HasTecnico(TipoPermissaoEnum permissão);
+    bool HasAuxiliarTecnico(TipoPermissaoEnum permissão);
+
     void RemoveSession();
     string GetUsername();
     int GetUserId();
@@ -36,6 +47,23 @@ namespace AspnetCoreMvcFull.Utils
     {
       return _httpContextAccessor.HttpContext.Session.GetString("Username");
     }
+
+    public bool HasAdministrator(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Administrador || permissão == TipoPermissaoEnum.Gerente_Administrativo;
+    public bool HasFinanceiro(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Financeiro || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasAnalista(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Analista_De_Sistemas || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasSuporte(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Suporte_Técnico || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasComercial(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Comercial || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasGerenteOperacional(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Gerente_Operacional || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasGerenteComercial(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Gerente_Comercial || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasTecnico(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Tecnico || permissão == TipoPermissaoEnum.Administrador;
+
+    public bool HasAuxiliarTecnico(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Auxiliar_Tecnico|| permissão == TipoPermissaoEnum.Administrador;
 
     public int GetUserId()
     {

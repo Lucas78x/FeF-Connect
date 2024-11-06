@@ -1,28 +1,73 @@
-.misc-wrapper {
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+.error-wrapper {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
   justify-content: center;
-  position: relative;
-  padding: 1.25rem;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f4f7;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  color: #495057;
 }
 
-.misc-bg {
-  inline-size: 100%;
-  position: absolute;
-  inset-inline-start: 0;
-  bottom: 0;
+.error-content {
+  max-width: 600px;
+  padding: 20px;
 }
 
-.misc-object {
-  position: absolute;
-  bottom: 15%;
-  z-index: 1;
-  left: 3%;
+.error-code {
+  font-size: 8rem;
+  font-weight: bold;
+  color: #e74c3c;
 }
 
-.misc-model {
-  position: relative;
-  bottom: 3rem;
+.error-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.error-description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #7f8c8d;
+}
+
+.btn-back-home {
+  padding: 12px 36px;
+  font-size: 1.1rem;
+  background-color: #3498db;
+  border-color: #3498db;
+  color: white;
+  border-radius: 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  transition: all 0.3s ease-in-out;
+}
+
+  .btn-back-home:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    transform: scale(1.05);
+  }
+
+.error-icon {
+  font-size: 6rem;
+  color: #f39c12;
+  margin-bottom: 1.5rem;
+}
+
+.fade-in {
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

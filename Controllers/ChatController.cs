@@ -3,7 +3,9 @@ using AspnetCoreMvcFull.DTO;
 using AspnetCoreMvcFull.Enums;
 using AspnetCoreMvcFull.Models;
 using AspnetCoreMvcFull.Utils;
-using Microsoft.AspNetCore.Hosting;
+using AspnetCoreMvcFull.Utils.Funcionarios;
+using AspnetCoreMvcFull.Utils.Messagem;
+using Ganss.Xss;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -11,19 +13,17 @@ namespace AspnetCoreMvcFull.Controllers
 {
   public class ChatController : Controller
   {
-    private readonly HttpClient _httpClient;
+    private readonly IMessageService _messageService;
+    private readonly IFuncionarioService _funcionarioService;
     private readonly IValidateSession _session;
-    private readonly IConfiguration _configuration;
-    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly IFileEncryptor _fileEncryptor;
     private readonly IHubContext<ChatHub> _hubContext;
 
-    public ChatController(HttpClient httpClient, IValidateSession session, IConfiguration configuration, IWebHostEnvironment webHostEnvironment, IFileEncryptor fileEncryptor, IHubContext<ChatHub> hubContext)
+    public ChatController(IMessageService messageService, IFuncionarioService funcionarioService, IValidateSession session, IFileEncryptor fileEncryptor, IHubContext<ChatHub> hubContext)
     {
-      _httpClient = httpClient;
+      _messageService = messageService;
+      _funcionarioService = funcionarioService;
       _session = session;
-      _configuration = configuration;
-      _webHostEnvironment = webHostEnvironment;
       _fileEncryptor = fileEncryptor;
       _hubContext = hubContext;
     }
@@ -35,29 +35,17 @@ namespace AspnetCoreMvcFull.Controllers
         return RedirectToAction("LoginBasic", "Auth");
       }
 
-      var usuarioAtualId = GetUsuarioAtualId();
+      var usuarioAtualId = _session.GetFuncionarioId();
+      var funcionarios = await _funcionarioService.ObterTodosFuncionariosAsync();
+      var mensagens = await _messageService.ObterMensagensAsync();
 
-      var funcionarios = await _httpClient.GetFromJsonAsync<List<FuncionarioModel>>("http://localhost:5235/api/Auth/funcionarios");
-      var mensagens = await _httpClient.GetFromJsonAsync<List<MensagemModel>>("http://localhost:5235/api/Mensagem/mensagens");
-      var funcionarioModel = funcionarios.FirstOrDefault(x => x.Id == usuarioAtualId);
       if (funcionarios.Any())
       {
         funcionarios.ForEach(func => func.ImagemUrl = UserIcon(func.Genero));
       }
 
-      var frontModel = new FrontModel(UserIcon());
-      var filteredFuncionarios = funcionarios
-     .Where(x => x.Id != usuarioAtualId)
-     .ToList();
-
-      var viewModel = new PartialModel
-      {
-        UsuarioAtualId = usuarioAtualId,
-        funcionario = funcionarioModel,
-        Funcionarios = filteredFuncionarios,
-        front = frontModel,
-        Mensagens = mensagens.Where(m => m.RemetenteId == usuarioAtualId || m.DestinatarioId == usuarioAtualId).ToList()
-      };
+      var funcionarioAtual = funcionarios.FirstOrDefault(x => x.Id == usuarioAtualId);
+      var viewModel = CriarPartialModel(usuarioAtualId, funcionarioAtual, funcionarios, mensagens);
 
       return View(viewModel);
     }
@@ -65,29 +53,27 @@ namespace AspnetCoreMvcFull.Controllers
     [HttpGet]
     public async Task<IActionResult> ObterMensagens(Guid destinatarioId)
     {
-      var mensagensModel = await _httpClient.GetFromJsonAsync<List<MensagemModel>>("http://localhost:5235/api/Mensagem/mensagens");
-      if (mensagensModel != null)
-      {
-        var mensagens = mensagensModel.Where(m => (m.RemetenteId == _session.GetFuncionarioId() && m.DestinatarioId == destinatarioId) ||
-                            (m.RemetenteId == destinatarioId && m.DestinatarioId == _session.GetFuncionarioId())).ToList();
+      var mensagens = await _messageService.ObterMensagensAsync();
+      var filteredMensagens = mensagens.Where(m => (m.RemetenteId == _session.GetFuncionarioId() && m.DestinatarioId == destinatarioId) ||
+                                                   (m.RemetenteId == destinatarioId && m.DestinatarioId == _session.GetFuncionarioId()))
+                                       .ToList();
 
-        return Json(mensagens);
-      }
-      return Json(null);
+      return Json(filteredMensagens);
     }
 
     [HttpPost]
     public async Task<IActionResult> EnviarMensagem(Guid destinatarioId, string conteudo)
     {
       var usuarioAtualId = GetUsuarioAtualId();
+      var sanitizer = new HtmlSanitizer();
+      conteudo = sanitizer.Sanitize(conteudo);
 
       var command = new CriarMensagemCommand(usuarioAtualId, destinatarioId, conteudo);
-      var response = await _httpClient.PostAsJsonAsync("http://localhost:5235/api/Mensagem/criar", command);
+      var mensagemId = await _messageService.EnviarMensagemAsync(command);
 
-      if (response.IsSuccessStatusCode)
+      if (mensagemId.HasValue)
       {
-        var mensagemId = await response.Content.ReadFromJsonAsync<Guid>();
-        return Json(new { success = true, mensagemId = mensagemId, usuarioAtualId = usuarioAtualId });
+        return Json(new { success = true, mensagemId = mensagemId.Value, usuarioAtualId = usuarioAtualId });
       }
 
       return BadRequest("Erro ao enviar mensagem");
@@ -97,9 +83,9 @@ namespace AspnetCoreMvcFull.Controllers
     public async Task<IActionResult> AtualizarMensagem(Guid mensagemId, string novoConteudo)
     {
       var command = new AtualizarMensagemCommand(mensagemId, novoConteudo);
-      var response = await _httpClient.PutAsJsonAsync("http://localhost:5235/api/Mensagem/atualizar", command);
+      var success = await _messageService.AtualizarMensagemAsync(command);
 
-      if (response.IsSuccessStatusCode)
+      if (success)
       {
         return RedirectToAction("Index");
       }
@@ -111,23 +97,17 @@ namespace AspnetCoreMvcFull.Controllers
     public async Task<IActionResult> MarcarComoLida(Guid mensagemId)
     {
       var command = new MarcarMensagemComoLidaCommand(mensagemId);
-      var response = await _httpClient.PutAsJsonAsync("http://localhost:5235/api/Mensagem/marcarComoLida", command);
+      var success = await _messageService.MarcarComoLidaAsync(command);
 
-      if (response.IsSuccessStatusCode)
-      {
-        return Json(new { success = true });
-      }
-
-      return Json(new { success = false });
+      return Json(new { success = success });
     }
 
     [HttpPost]
     public async Task<IActionResult> DeletarMensagem(Guid mensagemId)
     {
-      var command = new DeletarMensagemCommand(mensagemId);
-      var response = await _httpClient.DeleteAsync($"http://localhost:5235/api/Mensagem/deletar/{mensagemId}");
+      var success = await _messageService.DeletarMensagemAsync(mensagemId);
 
-      if (response.IsSuccessStatusCode)
+      if (success)
       {
         return RedirectToAction("Index");
       }
@@ -135,29 +115,36 @@ namespace AspnetCoreMvcFull.Controllers
       return BadRequest("Erro ao deletar mensagem");
     }
 
+    private PartialModel CriarPartialModel(Guid usuarioAtualId, FuncionarioModel funcionario, List<FuncionarioModel> funcionarios, List<MensagemModel> mensagens)
+    {
+      var filteredFuncionarios = funcionarios.Where(x => x.Id != usuarioAtualId).ToList();
+
+      return new PartialModel
+      {
+        UsuarioAtualId = usuarioAtualId,
+        funcionario = funcionario,
+        Funcionarios = filteredFuncionarios,
+        front = new FrontModel(UserIcon(_session.GetGenero())),
+        Mensagens = mensagens.Where(m => m.RemetenteId == usuarioAtualId || m.DestinatarioId == usuarioAtualId).ToList()
+      };
+    }
+
+    private string SanitizeInput(string input)
+    {
+      var sanitizer = new HtmlSanitizer();
+      return sanitizer.Sanitize(input);
+    }
+
+    private string UserIcon(TipoGeneroEnum genero = default)
+    {
+      string patch = Path.Combine(_fileEncryptor.GetRootPath(), "Users");
+      string key = _fileEncryptor.GetSecretKey();
+      return _fileEncryptor.UserIconUrl(patch, key, _session.GetUserId().ToString(),0, genero);
+    }
+
     private Guid GetUsuarioAtualId()
     {
-
       return _session.GetFuncionarioId();
-    }
-    private string UserIcon()
-    {
-      string patch = "";
-      string key = "";
-      patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-      key = _configuration["Authentication:Secret"];
-
-      ViewBag.Username = _session.GetUsername();
-      return _fileEncryptor.UserIconUrl(patch, _webHostEnvironment.WebRootPath, key, _session.GetUserId(), _session.GetGenero());
-    }
-    private string UserIcon(TipoGeneroEnum genero)
-    {
-      string patch = "";
-      string key = "";
-      patch = Path.Combine(_webHostEnvironment.WebRootPath, _configuration["Authentication:UserPatch"]);
-      key = _configuration["Authentication:Secret"];
-
-      return _fileEncryptor.UserIconUrl(patch, _webHostEnvironment.WebRootPath, key, 0, genero);
     }
   }
 }
