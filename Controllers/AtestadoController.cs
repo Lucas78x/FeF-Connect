@@ -4,7 +4,6 @@ using AspnetCoreMvcFull.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SkiaSharp;
 using System.Net.Http;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;

@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using Newtonsoft.Json;
 using AspnetCoreMvcFull.Enums;
-using OxyPlot;
 using System.Text;
 
 namespace AspnetCoreMvcFull.Controllers
