@@ -38,14 +38,14 @@ namespace AspnetCoreMvcFull.Controllers
 
 
  
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> FeriasAdmin()
     {
 
       if (!_validateSession.IsUserValid())
         return RedirectToAction("LoginBasic", "Auth");
 
-      //if (!_validateSession.HasAdministrator(_validateSession.GetPermissao()) || !_validateSession.HasAnalista(_validateSession.GetPermissao()))
-      //  return RedirectToAction("MiscError", "MiscError");
+      if (!_validateSession.HasAdministrator(_validateSession.GetPermissao()) || !_validateSession.HasAnalista(_validateSession.GetPermissao()))
+        return RedirectToAction("MiscError", "MiscError");
 
       var client = _httpClientFactory.CreateClient();
       client.DefaultRequestHeaders.Authorization =
@@ -97,7 +97,7 @@ namespace AspnetCoreMvcFull.Controllers
           partialModel.Ferias = ferias;
         }
 
-        return View("Index", partialModel);
+        return View("FeriasAdmin", partialModel);
       }
       catch (Exception ex)
       {
@@ -127,8 +127,8 @@ namespace AspnetCoreMvcFull.Controllers
       if (!_validateSession.IsUserValid())
         return RedirectToAction("LoginBasic", "Auth");
 
-      //if (!_validateSession.HasAdministrator(_validateSession.GetPermissao()) || !_validateSession.HasAnalista(_validateSession.GetPermissao()))
-      //  return RedirectToAction("MiscError", "MiscError");
+      if (!_validateSession.HasAdministrator(_validateSession.GetPermissao()) || !_validateSession.HasAnalista(_validateSession.GetPermissao()))
+        return RedirectToAction("MiscError", "MiscError");
 
       if (ModelState.IsValid)
       {

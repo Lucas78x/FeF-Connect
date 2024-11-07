@@ -48,22 +48,36 @@ namespace AspnetCoreMvcFull.Utils
       return _httpContextAccessor.HttpContext.Session.GetString("Username");
     }
 
-    public bool HasAdministrator(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Administrador || permissão == TipoPermissaoEnum.Gerente_Administrativo;
-    public bool HasFinanceiro(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Financeiro || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasPermission(TipoPermissaoEnum permissão, params TipoPermissaoEnum[] roles) =>
+    roles.Contains(permissão) || permissão == TipoPermissaoEnum.Administrador;
 
-    public bool HasAnalista(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Analista_De_Sistemas || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasAdministrator(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Administrador, TipoPermissaoEnum.Gerente_Administrativo);
 
-    public bool HasSuporte(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Suporte_Técnico || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasFinanceiro(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Financeiro);
 
-    public bool HasComercial(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Comercial || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasAnalista(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Analista_De_Sistemas);
 
-    public bool HasGerenteOperacional(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Gerente_Operacional || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasSuporte(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Suporte_Técnico);
 
-    public bool HasGerenteComercial(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Gerente_Comercial || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasComercial(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Comercial);
 
-    public bool HasTecnico(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Tecnico || permissão == TipoPermissaoEnum.Administrador;
+    public bool HasGerenteOperacional(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Gerente_Operacional);
 
-    public bool HasAuxiliarTecnico(TipoPermissaoEnum permissão) => permissão == TipoPermissaoEnum.Auxiliar_Tecnico|| permissão == TipoPermissaoEnum.Administrador;
+    public bool HasGerenteComercial(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Gerente_Comercial);
+
+    public bool HasTecnico(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Tecnico);
+
+    public bool HasAuxiliarTecnico(TipoPermissaoEnum permissão) =>
+        HasPermission(permissão, TipoPermissaoEnum.Auxiliar_Tecnico);
+
 
     public int GetUserId()
     {

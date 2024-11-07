@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="~/vendor/css/documentacao.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="page-header text-center">
+            <h1 class="display-4">Documentação</h1>
+        </div>
+
+        <!-- Botão para abrir o modal de adição -->
+        <div class="mb-4 text-right">
+            <button class="btn btn-success" data-toggle="modal" data-target="#addDocumentModal">
+                <i class="fas fa-plus"></i> Adicionar
+            </button>
+        </div>
+
+        <div class="filter-container d-flex justify-content-between align-items-center mb-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Buscar...">
+            <select id="fileTypeFilter" class="form-control w-25">
+                <option value="">Todos</option>
+                <option value="pdf">PDF</option>
+                <option value="doc">Word</option>
+                <option value="xls">Excel</option>
+                <option value="ppt">PowerPoint</option>
+                <option value="mp4">Vídeo</option>
+                <option value="txt">Texto</option>
+            </select>
+        </div>
+
+        <!-- Exibição dos Documentos -->
+        <div class="card-columns" id="documentContainer">
+            @foreach (var document in Model.Documents)
+            {
+                <div class="card @document.FileType.ToLower()">
+                    <div class="card-body text-center">
+                        <i class="fas @GetFileIconClass(document.FileType) card-icon"></i>
+                        <h5 class="card-title">@document.Title</h5>
+                        <p class="card-text">
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#documentModal" data-filepath="@document.FilePath" data-title="@document.Title" data-filetype="@document.FileType">
+                                <i class="fas fa-eye"></i> Visualizar
+                            </button>
+                            <a href="@document.FilePath" class="btn btn-secondary" download>
+                                <i class="fas fa-download"></i> Baixar
+                            </a>
+                            <i class="fas fa-times text-danger cursor-pointer" data-toggle="modal" data-target="#removeDocumentModal" data-filepath="@document.FilePath"></i>
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar Documento -->
+    <div class="modal fade" id="addDocumentModal" tabindex="-1" role="dialog" aria-labelledby="addDocumentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDocumentModalLabel">Adicionar</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="title">Título</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fileType">Tipo de Arquivo</label>
+                            <select class="form-control" id="fileType" name="fileType" required>
+                                <option value="pdf">PDF</option>
+                                <option value="doc">Word</option>
+                                <option value="xls">Excel</option>
+                                <option value="ppt">PowerPoint</option>
+                                <option value="mp4">Vídeo</option>
+                                <option value="txt">Texto</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="file">Arquivo</label>
+                            <input type="file" class="form-control-file" id="file" name="file" required>
+                            <small id="fileHelp" class="form-text text-muted">O arquivo deve ser PDF, DOC, DOCX, MP4, XLS, XLSX, PPT, PPTX ou TXT.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="submitButton">Adicionar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Remover Documento -->
+    <div class="modal fade" id="removeDocumentModal" tabindex="-1" role="dialog" aria-labelledby="removeDocumentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeDocumentModalLabel">Confirmar Remoção</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Tem certeza de que deseja remover este documento?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmRemoveButton">Remover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Visualizar Documento -->
+    <div class="modal fade" id="documentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentModalLabel">Documento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="documentViewer">
+                        <!-- Conteúdo dinâmico do documento será exibido aqui -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a id="downloadLink" href="" class="btn btn-primary" download>
+                        <i class="fas fa-download"></i> Baixar
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @functions {
+        public string GetFileIconClass(string fileType)
+        {
+            switch (fileType.ToLower())
+            {
+                case "pdf":
+                    return "fa-file-pdf";
+                case "doc":
+                case "docx":
+                    return "fa-file-word";
+                case "mp4":
+                    return "fa-file-video";
+                case "xls":
+                case "xlsx":
+                    return "fa-file-excel";
+                case "ppt":
+                case "pptx":
+                    return "fa-file-powerpoint";
+                case "txt":
+                    return "fa-file-alt";
+                default:
+                    return "fa-file";
+            }
+        }
+    }
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="~/js/Document/nocDocument.js"></script>
+</body>
+</html>

@@ -140,15 +140,15 @@
 
                 case TipoPermissaoEnum.Analista_De_Sistemas:
                     <li class='menu-item @(currentPage.EndsWith("/") ||
-             currentPage.StartsWith("/Document") ||
-             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+             currentPage.StartsWith("/NocDocument") ||
+             currentPage.StartsWith("/NocTutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons mdi mdi-server"></i>
                             <div>NOC</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
-                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/NocDocument/NocDocument" ? " active" : "")'>
+                                <form action="/NocDocument/NocDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Documentação</div>
@@ -156,8 +156,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/NocTutorial/NocTutorial" ? " active" : "")'>
+                                <form action="/NocTutorial/NocTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Tutoriais</div>
@@ -172,8 +172,8 @@
                 case TipoPermissaoEnum.Financeiro:
                     <li class='menu-item @(currentPage.EndsWith("/") ||
              currentPage.StartsWith("/Financeiro") ||
-             currentPage.StartsWith("/Document") ||
-             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+             currentPage.StartsWith("/FinDocument") ||
+             currentPage.StartsWith("/FinTutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons mdi mdi-wallet"></i>
                             <div>Financeiro</div>
@@ -188,7 +188,7 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
+                            <li class='menu-item @(currentPage == "/FinDocument/FinDocument" ? " active" : "")'>
                                 <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
@@ -197,8 +197,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/FinTutorial/FinTutorial" ? " active" : "")'>
+                                <form action="/FinTutorial/FinTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Tutoriais</div>
@@ -237,8 +237,8 @@
                 case TipoPermissaoEnum.Administrador:
                     <li class='menu-item @(currentPage.EndsWith("/") ||
              currentPage.StartsWith("/FeriasAdmin") ||
-             currentPage.StartsWith("/Document") ||
-             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+             currentPage.StartsWith("/GerDocument") ||
+             currentPage.StartsWith("/GerTutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons mdi mdi-briefcase"></i>
                             <div>Recursos Humanos</div>
@@ -253,8 +253,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
-                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/GerDocument/GerDocument" ? " active" : "")'>
+                                <form action="/GerDocument/GerDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Documentação</div>
@@ -262,8 +262,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/GerTutorial/GerTutorial" ? " active" : "")'>
+                                <form action="/GerTutorial/GerTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Tutoriais</div>
@@ -275,8 +275,8 @@
                     </li>
                     <li class='menu-item @(currentPage.EndsWith("/") ||
              currentPage.StartsWith("/Financeiro") ||
-             currentPage.StartsWith("/Document") ||
-             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+             currentPage.StartsWith("/FinDocument") ||
+             currentPage.StartsWith("/FinTutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons mdi mdi-wallet"></i>
                             <div>Financeiro</div>
@@ -291,8 +291,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
-                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/FinDocument/FinDocument" ? " active" : "")'>
+                                <form action="/FinDocument/FinDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Documentação</div>
@@ -300,8 +300,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/FinTutorial/FinTutorial" ? " active" : "")'>
+                                <form action="/FinTutorial/FinTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Tutoriais</div>
@@ -312,15 +312,15 @@
                         </ul>
                     </li>
                     <li class='menu-item @(currentPage.EndsWith("/") ||
-             currentPage.StartsWith("/Document") ||
-             currentPage.StartsWith("/Tutorial") ? "active open" : "")'>
+             currentPage.StartsWith("/NocDocument") ||
+             currentPage.StartsWith("/NocTutorial") ? "active open" : "")'>
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons mdi mdi-server"></i>
                             <div>NOC</div>
                         </a>
                         <ul class="menu-sub">
-                            <li class='menu-item @(currentPage == "/Document/Document" ? " active" : "")'>
-                                <form action="/Document/RedirecToDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/NocDocument/NocDocument" ? " active" : "")'>
+                                <form action="/NocDocument/NocDocument" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Documentação</div>
@@ -328,8 +328,8 @@
                                     </button>
                                 </form>
                             </li>
-                            <li class='menu-item @(currentPage == "/Tutorial/Tutorial" ? " active" : "")'>
-                                <form action="/Tutorial/RedirecToTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
+                            <li class='menu-item @(currentPage == "/NocTutorial/NocTutorial" ? " active" : "")'>
+                                <form action="/NocTutorial/NocTutorial" method="post" class="menu-link" style="display: flex; align-items: center;">
                                     <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center; width: 100%;">
                                         <i class="menu-icon tf-icons mdi mdi-message-outline"></i>
                                         <div style="flex-grow: 1;">Tutoriais</div>
