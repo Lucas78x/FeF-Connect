@@ -23,7 +23,7 @@
 
     <div class="d-flex justify-content-between mb-3">
         <button type="button" class="btn btn-primary btn-add" data-bs-toggle="modal" data-bs-target="#adicionarModal">
-            Adicionar Atestado
+            Adicionar
         </button>
 
         <div>
@@ -56,10 +56,14 @@
                         <strong>Anexo:</strong>
                         @if (!string.IsNullOrEmpty(atestado.UrlAnexo))
                         {
+
+                           var fileUrl = Url.Content(atestado.UrlAnexo);
+                           string url = $"{Guid.NewGuid()}.pdf";
+
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-file-earmark-pdf-fill text-danger fs-4 me-2"></i>
-                                <a href="@atestado.UrlAnexo" target="_blank" class="btn btn-sm btn-primary">
-                                    Baixar
+                               <a href="@fileUrl" class="btn btn-sm btn-primary" target="_blank">
+                                Baixar
                                 </a>
                             </div>
                         }
@@ -104,6 +108,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll('.download-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();  // Prevent default action (link follow)
+            const fileUrl = this.getAttribute('data-url');
+            if (fileUrl) {
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);  // Extracts the file name from the URL
+                link.click();  // Programmatically trigger the download
+            } else {
+                alert('No file to download.');
+            }
+        });
+    });
+</script>
 
 <script>
     $(document).ready(function () {

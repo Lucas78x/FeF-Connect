@@ -1,143 +1,180 @@
-
-
 /* Estilo da barra de rolagem */
 ::-webkit-scrollbar {
-  width: 8px; /* Largura da barra de rolagem */
+  width: 6px; /* Largura mais fina para a barra de rolagem */
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Cor do fundo da barra de rolagem */
-  border-radius: 10px; /* Bordas arredondadas para o trilho */
+  background: #e9ecef; /* Cor mais suave para o fundo da barra de rolagem */
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #007bff; /* Cor da parte que é arrastada */
-  border-radius: 10px; /* Bordas arredondadas para a parte arrastada */
+  background: #6c757d; /* Cor mais neutra para a barra arrastável */
+  border-radius: 10px;
 }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #0056b3; /* Cor ao passar o mouse */
+    background: #5a6268; /* Cor levemente mais escura ao passar o mouse */
   }
 
 .container {
-  max-width: 800px; /* Largura máxima do contêiner */
-  margin: auto; /* Centraliza o contêiner */
-  padding: 40px; /* Espaçamento interno aumentado */
-  background-color: white; /* Fundo branco para o contêiner */
-  border-radius: 8px; /* Bordas arredondadas */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Sombra suave para profundidade */
+  max-width: 800px;
+  margin: auto;
+  padding: 40px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
-  color: #343a40; /* Cor mais escura para o cabeçalho */
-  margin-bottom: 25px; /* Espaçamento abaixo do cabeçalho */
-  text-align: center; /* Centraliza o cabeçalho */
-  font-size: 24px; /* Tamanho da fonte aumentado para o cabeçalho */
+  color: #495057; /* Cor mais neutra para o cabeçalho */
+  margin-bottom: 25px;
+  text-align: center;
+  font-size: 24px;
 }
 
 .btn-add {
-  display: block; /* Faz o botão um elemento em bloco */
-  margin: 0 auto 25px; /* Centraliza o botão com margem automática */
-  width: 220px; /* Largura fixa para consistência */
+  display: block;
+  margin: 0 auto 15px;
+  padding: 8px 15px; /* Aumenta o padding para tornar o botão mais alto */
+  width: 100%; /* Largura 100% para ocupar o espaço disponível */
+  max-width: 250px; /* Largura máxima para o botão */
+  background-color: #6c757d; /* Cor neutra */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px; /* Tamanho da fonte reduzido */
+  text-align: center; /* Alinha o texto ao centro */
+  white-space: nowrap; /* Impede o quebra de linha */
+  overflow: hidden; /* Garante que o texto não ultrapasse os limites do botão */
+  text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
+  transition: background-color 0.3s;
 }
 
-#searchInput {
-  width: auto; /* Largura automática para a barra de pesquisa */
-  display: inline-block; /* Exibição em linha */
+  .btn-add:hover {
+    background-color: #5a6268; /* Cor mais escura ao passar o mouse */
+  }
+
+
+
+  #searchInput {
+  width: auto;
+  display: inline-block;
 }
 
 .atestados-list {
-  max-height: 400px; /* Altura máxima para a lista */
-  overflow-y: auto; /* Habilita rolagem vertical */
-  margin-top: 20px; /* Espaço acima da lista */
-  border: 1px solid #e0e0e0; /* Borda leve ao redor da lista */
-  border-radius: 8px; /* Bordas arredondadas para a lista */
-  background-color: #fff; /* Fundo branco para a lista */
-  padding: 10px; /* Espaçamento interno */
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  padding: 10px;
 }
 
 .atestado-card {
-  margin-bottom: 20px; /* Espaço entre os cards */
-  border-radius: 8px; /* Bordas arredondadas para os cards */
-  transition: transform 0.2s; /* Efeito suave de escala */
-  background-color: #ffffff; /* Fundo branco para os cards */
-  border: 1px solid #e0e0e0; /* Borda leve para os cards */
+  margin-bottom: 20px;
+  border-radius: 8px;
+  transition: transform 0.2s;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
 }
 
   .atestado-card:hover {
-    transform: scale(1.02); /* Aumenta levemente ao passar o mouse */
+    transform: scale(1.02);
   }
 
 .card-header {
-  background-color: #007bff; /* Cor primária para o cabeçalho */
-  color: white; /* Texto branco para contraste */
-  font-weight: bold; /* Texto do cabeçalho em negrito */
+  background-color: #6c757d; /* Tom mais suave */
+  color: white;
+  font-weight: bold;
 }
 
 .card-body {
-  padding: 15px; /* Espaçamento interno do corpo do card */
+  padding: 15px;
 }
 
 .form-label {
-  font-weight: bold; /* Rótulos em negrito para melhor visibilidade */
+  font-weight: bold;
 }
 
 .form-select {
-  width: auto; /* Largura automática para os elementos select */
-  display: inline-block; /* Exibição em linha */
-  margin-left: 10px; /* Espaço entre o select e o rótulo */
+  width: auto;
+  display: inline-block;
+  margin-left: 10px;
 }
 
 .mb-3 {
-  margin-bottom: 1rem; /* Margem inferior para elementos com a classe .mb-3 */
+  margin-bottom: 1rem;
 }
 
 .modal-header {
-  background-color: #f1f1f1; /* Fundo claro para o cabeçalho do modal */
-  border-bottom: 1px solid #dee2e6; /* Borda inferior suave */
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .modal-body {
-  padding: 20px; /* Espaçamento interno do corpo do modal */
+  padding: 20px;
 }
 
 .btn-secondary {
-  background-color: #6c757d; /* Cor secundária para botões */
-  border: none; /* Remove borda padrão */
+  background-color: #6c757d;
+  border: none;
 }
 
 .btn-primary {
-  background-color: #007bff; /* Cor primária para botões */
-  border: none; /* Remove borda padrão */
+  background-color: #007bff;
+  border: none;
 }
 
 .btn-close {
-  color: #000; /* Cor do botão de fechar */
+  color: #000;
 }
 
 .text-muted {
-  color: #6c757d; /* Cor para texto desativado */
+  color: #6c757d;
 }
 
 iframe {
-  border: none; /* Remove borda do iframe */
-  border-radius: 8px; /* Bordas arredondadas para o iframe */
+  border: none;
+  border-radius: 8px;
 }
 
 @media (max-width: 576px) {
   .container {
-    padding: 20px; /* Menos padding em telas pequenas */
+    padding: 20px;
   }
 
   h2 {
-    font-size: 20px; /* Reduz o tamanho da fonte do cabeçalho em telas pequenas */
+    font-size: 20px;
+  }
+
+  /* Adiciona o layout flexível à classe container */
+  .container {
+    display: flex;
+    flex-direction: column; /* Alinha verticalmente no mobile */
+  }
+
+  .search-container {
+    display: flex; /* Flexbox para alinhar o botão e o campo de pesquisa na mesma linha */
+    justify-content: space-between; /* Espaço entre os elementos */
+    align-items: center; /* Alinha os itens verticalmente */
   }
 
   .btn-add {
-    width: 100%; /* Botão ocupa a largura total em telas pequenas */
+    width: auto; /* Ajusta o tamanho do botão automaticamente */
+    padding: 8px 12px; /* Ajusta o padding para tornar o botão mais compacto */
+    font-size: 12px; /* Reduz o tamanho da fonte */
+    white-space: nowrap; /* Impede a quebra de linha no texto */
+    overflow: hidden; /* Garante que o texto não ultrapasse os limites do botão */
+    text-overflow: ellipsis; /* Adiciona '...' caso o texto seja muito grande */
+    box-sizing: border-box; /* Garante que o padding não afete a largura total */
+    margin-right: 15px; /* Aumenta o espaço à esquerda do botão para afastá-lo do campo de pesquisa */
   }
 
   #searchInput {
-    width: 100%; /* Barra de pesquisa ocupa a largura total em telas pequenas */
+    width: 100%;
   }
 }
+
+

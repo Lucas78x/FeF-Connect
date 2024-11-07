@@ -130,8 +130,10 @@ namespace AspnetCoreMvcFull.Controllers
         await Anexo.CopyToAsync(stream);
       }
 
+      var urlAnexo = "~/" + Path.GetRelativePath(_webHostEnvironment.ContentRootPath, filePath).Replace("\\", "/");
+      urlAnexo = urlAnexo.Replace("/wwwroot", "");
       model.SetId();
-      model.SetUrlAnexo("~/" + Path.GetRelativePath(_webHostEnvironment.ContentRootPath, filePath).Replace("\\", "/"));
+      model.SetUrlAnexo(urlAnexo);
       model.SetOwnerId(_validateSession.GetFuncionarioId());
 
       var response = await SendRegisterRequestAsync(model);
