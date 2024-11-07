@@ -5,20 +5,19 @@ using AspnetCoreMvcFull.Utils.Messagem;
 using AspnetCoreMvcFull.Utils.PDF;
 using AspnetCoreMvcFull.Utils.Token;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.HttpOverrides; 
 using Serilog;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
+     Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration) 
     .Enrich.FromLogContext()
-    .WriteTo.Console()
+    .WriteTo.Console() 
     .CreateLogger();
 
 builder.Host.UseSerilog(Log.Logger);
-
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<IUserIdProvider, SessionUserIdProvider>();
@@ -33,40 +32,30 @@ builder.Services.AddScoped<HttpClient>();
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
-
-// Session configuration
 builder.Services.AddSession(options =>
 {
-  options.IdleTimeout = TimeSpan.FromHours(2);
-  options.Cookie.HttpOnly = true;
-  options.Cookie.IsEssential = true;
+  options.IdleTimeout = TimeSpan.FromHours(2); 
+  options.Cookie.HttpOnly = true; 
+  options.Cookie.IsEssential = true; 
 });
 
-
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-  options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-});
 
 var app = builder.Build();
 
-
-app.UseForwardedHeaders();
-
 if (!app.Environment.IsDevelopment())
 {
-  app.UseExceptionHandler("/Home/Error");
-  app.UseHsts();
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthorization();
 app.UseSession();
 
-// Default route and SignalR Hub mapping
 app.UseEndpoints(endpoints =>
 {
   // Default route for controllers
@@ -75,9 +64,7 @@ app.UseEndpoints(endpoints =>
       pattern: "{controller=Auth}/{action=LoginBasic}/{id?}"
   );
 
-  // SignalR Hub
   endpoints.MapHub<ChatHub>("/chatHub");
 });
 
-// Run the application
 app.Run();
